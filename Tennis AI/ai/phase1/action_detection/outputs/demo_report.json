@@ -1,0 +1,121 @@
+{
+  "overview": {
+    "gt_events": 5,
+    "pred_events": 5,
+    "matched_events": 3,
+    "correct_classifications": 3,
+    "classification_accuracy_on_gt": 0.6,
+    "classification_accuracy_on_matched": 1.0,
+    "macro_f1": 0.611111111111111,
+    "micro_precision": 0.6,
+    "micro_recall": 0.6,
+    "micro_f1": 0.6,
+    "detection_precision": 0.6,
+    "detection_recall": 0.6,
+    "detection_f1": 0.6
+  },
+  "per_class": [
+    {
+      "class": "forehand",
+      "support": 2,
+      "tp": 1,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+    },
+    {
+      "class": "backhand",
+      "support": 2,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+    },
+    {
+      "class": "serve",
+      "support": 1,
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666
+    },
+    {
+      "class": "unknown",
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  ],
+  "confusion_matrix": {
+    "forehand": {
+      "forehand": 1,
+      "backhand": 0,
+      "serve": 0,
+      "unknown": 0,
+      "missing": 1
+    },
+    "backhand": {
+      "forehand": 0,
+      "backhand": 1,
+      "serve": 0,
+      "unknown": 0,
+      "missing": 1
+    },
+    "serve": {
+      "forehand": 0,
+      "backhand": 0,
+      "serve": 1,
+      "unknown": 0,
+      "missing": 0
+    },
+    "unknown": {
+      "forehand": 0,
+      "backhand": 0,
+      "serve": 0,
+      "unknown": 0,
+      "missing": 0
+    },
+    "spurious": {
+      "forehand": 1,
+      "backhand": 0,
+      "serve": 1,
+      "unknown": 0,
+      "missing": 0
+    }
+  },
+  "meta": {
+    "gt_csv": "/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/action_detection/labels/demo_gt.csv",
+    "pred_csv": "/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/action_detection/labels/demo_pred.csv",
+    "columns_used": {
+      "gt": {
+        "frame": "frame_num",
+        "label": "action_type",
+        "confidence": null
+      },
+      "pred": {
+        "frame": "frame_num",
+        "label": "action_type",
+        "confidence": "confidence"
+      }
+    },
+    "classes": [
+      "forehand",
+      "backhand",
+      "serve",
+      "unknown"
+    ],
+    "tolerance_frames": 4,
+    "min_confidence": 0.35,
+    "ignore_labels": []
+  }
+}

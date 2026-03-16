@@ -1,0 +1,4 @@
+rally_id,start_frame,end_frame,start_sec,end_sec,duration_sec,num_frames,num_shots,first_shot_id,last_shot_id,near_shots,far_shots,unassigned_shots
+1,0,78,0.0,3.12,3.16,79,1,1,1,1,0,0
+2,132,243,5.28,9.72,4.48,112,1,2,2,0,0,1
+3,256,375,10.24,15.0,4.8,120,0,,,0,0,0

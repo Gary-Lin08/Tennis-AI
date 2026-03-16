@@ -1,0 +1,19 @@
+{
+  "num_shots": 1,
+  "shots": [
+    {
+      "shot_id": 1,
+      "frame_num": 189,
+      "time_sec": 7.56,
+      "x_px": 273.0,
+      "y_px": 63.0,
+      "x_m": 3.177110433578491,
+      "y_m": -4.353449821472168,
+      "hitter_side": "far",
+      "angle_change_deg": 166.75656127929688,
+      "speed_before_kmh": 38.661590576171875,
+      "speed_after_kmh": 33.151161193847656,
+      "confidence": 0.7678018948752369
+    }
+  ]
+}

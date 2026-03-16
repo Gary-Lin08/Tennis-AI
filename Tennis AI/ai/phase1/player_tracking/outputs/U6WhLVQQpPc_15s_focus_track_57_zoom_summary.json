@@ -1,0 +1,65 @@
+{
+  "video": "/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/tracknet_tennis/videos/U6WhLVQQpPc_15s.mp4",
+  "target_track_id": 57,
+  "zoom": 2.4,
+  "tracker": "bytetrack.yaml",
+  "tracks": [
+    {
+      "track_id": 1,
+      "frames": 375,
+      "first_frame": 0,
+      "last_frame": 374,
+      "avg_conf": 0.8452,
+      "avg_area_px": 2763.29
+    },
+    {
+      "track_id": 57,
+      "frames": 327,
+      "first_frame": 46,
+      "last_frame": 374,
+      "avg_conf": 0.4142,
+      "avg_area_px": 3095.45
+    },
+    {
+      "track_id": 56,
+      "frames": 321,
+      "first_frame": 46,
+      "last_frame": 374,
+      "avg_conf": 0.4952,
+      "avg_area_px": 5048.84
+    },
+    {
+      "track_id": 95,
+      "frames": 49,
+      "first_frame": 174,
+      "last_frame": 299,
+      "avg_conf": 0.2872,
+      "avg_area_px": 1229.02
+    },
+    {
+      "track_id": 4,
+      "frames": 21,
+      "first_frame": 0,
+      "last_frame": 23,
+      "avg_conf": 0.5872,
+      "avg_area_px": 3700.14
+    },
+    {
+      "track_id": 3,
+      "frames": 5,
+      "first_frame": 0,
+      "last_frame": 4,
+      "avg_conf": 0.6298,
+      "avg_area_px": 1328.03
+    }
+  ],
+  "render": {
+    "fps": 25.0,
+    "width": 640,
+    "height": 360,
+    "frame_count": 375,
+    "lock_frames": 327,
+    "missing_or_search_frames": 46
+  },
+  "output_video": "/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/player_tracking/outputs/U6WhLVQQpPc_15s_focus_track_57_zoom.mp4"
+}

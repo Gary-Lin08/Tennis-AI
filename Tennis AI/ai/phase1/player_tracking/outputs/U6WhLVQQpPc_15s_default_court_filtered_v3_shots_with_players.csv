@@ -1,0 +1,3 @@
+shot_id,frame_num,time_sec,x_px,y_px,player_track_id,player_conf,player_side,assign_distance_px,side_matched
+1,22,0.88,380.6,254.0,1,0.862,near,0.0,1
+2,172,6.88,361.4,142.6,,,,,

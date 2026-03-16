@@ -1,0 +1,9 @@
+.DS_Store
+*.zip
+**/__pycache__/
+**/.venv/
+**/*.part
+**/experiments/videos/
+**/experiments/runs/
+phase1/court_detection/samples/
+phase1/court_detection/outputs/

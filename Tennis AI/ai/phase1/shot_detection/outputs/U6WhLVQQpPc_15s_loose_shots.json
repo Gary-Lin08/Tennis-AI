@@ -1,0 +1,47 @@
+{
+  "num_shots": 3,
+  "shots": [
+    {
+      "shot_id": 1,
+      "frame_num": 22,
+      "time_sec": 0.88,
+      "x_px": 380.6000061035156,
+      "y_px": 254.0,
+      "x_m": 7.039180278778076,
+      "y_m": 22.788328170776367,
+      "hitter_side": "near",
+      "angle_change_deg": 179.39639282226562,
+      "speed_before_kmh": 19.81178855895996,
+      "speed_after_kmh": 14.508929252624512,
+      "confidence": 0.36150688494920663
+    },
+    {
+      "shot_id": 2,
+      "frame_num": 172,
+      "time_sec": 6.88,
+      "x_px": 361.3999938964844,
+      "y_px": 142.60000610351562,
+      "x_m": 6.973855495452881,
+      "y_m": 11.465898513793945,
+      "hitter_side": "far",
+      "angle_change_deg": 101.99309539794922,
+      "speed_before_kmh": 32.804168701171875,
+      "speed_after_kmh": 19.78482437133789,
+      "confidence": 0.2802660388246578
+    },
+    {
+      "shot_id": 3,
+      "frame_num": 189,
+      "time_sec": 7.56,
+      "x_px": 273.0,
+      "y_px": 63.0,
+      "x_m": 3.177110433578491,
+      "y_m": -4.353449821472168,
+      "hitter_side": "far",
+      "angle_change_deg": 166.75656127929688,
+      "speed_before_kmh": 38.661590576171875,
+      "speed_after_kmh": 33.151161193847656,
+      "confidence": 0.7678018948752369
+    }
+  ]
+}

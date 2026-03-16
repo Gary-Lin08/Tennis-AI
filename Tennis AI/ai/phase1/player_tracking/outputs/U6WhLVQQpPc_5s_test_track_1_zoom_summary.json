@@ -1,0 +1,57 @@
+{
+  "video": "/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/tracknet_tennis/videos/U6WhLVQQpPc_5s.mp4",
+  "target_track_id": 1,
+  "zoom": 2.3,
+  "tracker": "bytetrack.yaml",
+  "tracks": [
+    {
+      "track_id": 1,
+      "frames": 125,
+      "first_frame": 0,
+      "last_frame": 124,
+      "avg_conf": 0.8646,
+      "avg_area_px": 2816.09
+    },
+    {
+      "track_id": 56,
+      "frames": 79,
+      "first_frame": 46,
+      "last_frame": 124,
+      "avg_conf": 0.5004,
+      "avg_area_px": 5398.53
+    },
+    {
+      "track_id": 57,
+      "frames": 79,
+      "first_frame": 46,
+      "last_frame": 124,
+      "avg_conf": 0.4265,
+      "avg_area_px": 3061.95
+    },
+    {
+      "track_id": 4,
+      "frames": 21,
+      "first_frame": 0,
+      "last_frame": 23,
+      "avg_conf": 0.5872,
+      "avg_area_px": 3700.14
+    },
+    {
+      "track_id": 3,
+      "frames": 5,
+      "first_frame": 0,
+      "last_frame": 4,
+      "avg_conf": 0.6298,
+      "avg_area_px": 1328.03
+    }
+  ],
+  "render": {
+    "fps": 25.0,
+    "width": 640,
+    "height": 360,
+    "frame_count": 125,
+    "lock_frames": 125,
+    "missing_or_search_frames": 0
+  },
+  "output_video": "/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/player_tracking/outputs/U6WhLVQQpPc_5s_test_track_1_zoom.mp4"
+}

@@ -1,0 +1,2116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tennis AI Telemetry Admin</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --bg-soft: #111a2b;
+        --card: #18243a;
+        --line: #284067;
+        --text: #eaf2ff;
+        --muted: #9bb3d6;
+        --accent: #4fd18b;
+        --accent-soft: #173a2a;
+        --warn: #ff8a63;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 0%, #153056 0%, transparent 45%),
+          radial-gradient(circle at 100% 0%, #17362a 0%, transparent 40%),
+          var(--bg);
+      }
+
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: 0.3px;
+      }
+
+      .sub {
+        color: var(--muted);
+        margin-top: 4px;
+        font-size: 14px;
+      }
+
+      .panel {
+        background: linear-gradient(160deg, var(--card), var(--bg-soft));
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .filters {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 10px;
+        border: 1px solid #35517d;
+        color: var(--text);
+        background: #0f1b2f;
+        outline: none;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--accent);
+      }
+
+      input[type="checkbox"] {
+        width: auto;
+        padding: 0;
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 9px;
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid #2f4f77;
+        color: var(--text);
+        background: #10213a;
+        padding: 8px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        border-color: var(--accent);
+      }
+
+      button.primary {
+        border-color: #4ea97d;
+        background: var(--accent-soft);
+      }
+
+      .status {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .error {
+        color: var(--warn);
+      }
+
+      .grid {
+        margin-top: 16px;
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1fr;
+      }
+
+      .totals {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(13, 24, 43, 0.8);
+      }
+
+      .metric .k {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .metric .v {
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .split {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .chart-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .chart-box {
+        border: 1px solid #2b4369;
+        border-radius: 10px;
+        background: rgba(13, 24, 43, 0.7);
+        padding: 10px;
+      }
+
+      .chart-title {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .chart-svg {
+        width: 100%;
+        height: 180px;
+        display: block;
+      }
+
+      .flow-box {
+        margin-top: 12px;
+        border: 1px solid #2b4369;
+        border-radius: 10px;
+        background: rgba(13, 24, 43, 0.7);
+        padding: 10px;
+      }
+
+      .flow-svg {
+        width: 100%;
+        height: 360px;
+        display: block;
+      }
+
+      .flow-metrics {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin-top: 8px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px 7px;
+        border-bottom: 1px solid #2b4369;
+        text-align: left;
+        vertical-align: top;
+        font-size: 13px;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+
+      .section-title {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 900px) {
+        .split {
+          grid-template-columns: 1fr;
+        }
+        .chart-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div>
+          <h1>Tennis AI Telemetry</h1>
+          <div class="sub">Clicks, dwell time, and usage duration without auth dependency</div>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="filters">
+          <div>
+            <label for="baseUrl">API Base URL</label>
+            <input id="baseUrl" type="text" />
+          </div>
+          <div>
+            <label for="adminKey">Admin Key (X-Admin-Key)</label>
+            <input id="adminKey" type="password" />
+          </div>
+          <div>
+            <label for="days">Window Days</label>
+            <input id="days" type="number" min="1" max="180" value="14" />
+          </div>
+          <div>
+            <label for="recentLimit">Recent Limit</label>
+            <input id="recentLimit" type="number" min="1" max="500" value="100" />
+          </div>
+          <div>
+            <label for="localUserId">local_user_id (optional)</label>
+            <input id="localUserId" type="text" placeholder="player_001" />
+          </div>
+          <div>
+            <label for="installId">install_id (optional)</label>
+            <input id="installId" type="text" />
+          </div>
+          <div>
+            <label for="eventName">event_name (optional)</label>
+            <input id="eventName" type="text" placeholder="tap / screen_view / app_usage_segment" />
+          </div>
+          <div>
+            <label for="screenName">screen_name (optional)</label>
+            <input id="screenName" type="text" placeholder="workflow / history / settings" />
+          </div>
+          <div>
+            <label for="screenTopN">Screen Rows Limit</label>
+            <input id="screenTopN" type="number" min="1" max="500" value="100" />
+          </div>
+          <div>
+            <label for="alertsBaselineDays">Alerts Baseline Days</label>
+            <input id="alertsBaselineDays" type="number" min="1" max="365" value="14" />
+          </div>
+          <div>
+            <label for="alertsConfirmWindows">Alerts Confirm Windows</label>
+            <input id="alertsConfirmWindows" type="number" min="1" max="4" value="2" />
+          </div>
+          <div>
+            <label for="alertsMinCurrentCount">Alerts Min Current Count</label>
+            <input id="alertsMinCurrentCount" type="number" min="1" max="100000" value="8" />
+          </div>
+          <div>
+            <label for="alertsMinGrowthRatio">Alerts Min Growth Ratio</label>
+            <input id="alertsMinGrowthRatio" type="number" min="0.1" max="1000" step="0.1" value="2.0" />
+          </div>
+          <div>
+            <label for="alertsMinWindowGrowth">Alerts Min Weak Growth</label>
+            <input id="alertsMinWindowGrowth" type="number" min="0.1" max="1000" step="0.1" placeholder="optional" />
+          </div>
+          <div>
+            <label for="alertsSortBy">Alerts Sort By</label>
+            <select id="alertsSortBy">
+              <option value="severity">severity</option>
+              <option value="min_window_growth">min_window_growth</option>
+              <option value="growth_ratio">growth_ratio</option>
+              <option value="delta_count">delta_count</option>
+              <option value="current_count">current_count</option>
+            </select>
+          </div>
+          <div>
+            <label for="autoRefreshSec">Auto Refresh (sec)</label>
+            <input id="autoRefreshSec" type="number" min="10" max="3600" value="30" />
+          </div>
+          <div>
+            <label>Auto Refresh Switch</label>
+            <div class="toggle-row">
+              <input id="autoRefreshEnabled" type="checkbox" />
+              <span>Enable automatic refresh loop</span>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="refreshAll" class="primary">Refresh All</button>
+          <button id="refreshOverview">Overview</button>
+          <button id="refreshDaily">Daily</button>
+          <button id="refreshScreens">Screens</button>
+          <button id="refreshTransitions">Transitions</button>
+          <button id="refreshTransitionAlerts">Alerts</button>
+          <button id="alertPresetStrict">Preset Strict</button>
+          <button id="alertPresetBalanced">Preset Balanced</button>
+          <button id="alertPresetAggressive">Preset Aggressive</button>
+          <button id="saveCustomAlertPreset">Save Custom Preset</button>
+          <button id="applyCustomAlertPreset">Apply Custom Preset</button>
+          <button id="refreshRecent">Recent</button>
+          <button id="exportDailyCsv">Export Daily CSV</button>
+          <button id="exportScreensCsv">Export Screens CSV</button>
+          <button id="exportTransitionsCsv">Export Transitions CSV</button>
+          <button id="exportTransitionAlertsCsv">Export Alerts CSV</button>
+          <button id="exportRecentCsv">Export Recent CSV</button>
+          <button id="clearScreenFilter">Clear Screen Filter</button>
+          <button id="clearKey">Clear Key</button>
+        </div>
+        <div class="status" id="statusText">Idle</div>
+      </section>
+
+      <div class="grid">
+        <section class="panel">
+          <h2 class="section-title">Overview</h2>
+          <div class="hint" id="overviewWindow">Window: -</div>
+          <div class="totals" id="overviewTotals"></div>
+          <div class="split" style="margin-top: 12px">
+            <div>
+              <h3 class="section-title">Top Screens</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>screen_name</th>
+                    <th>count</th>
+                  </tr>
+                </thead>
+                <tbody id="topScreensBody"></tbody>
+              </table>
+            </div>
+            <div>
+              <h3 class="section-title">Top Targets</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>target_name</th>
+                    <th>count</th>
+                  </tr>
+                </thead>
+                <tbody id="topTargetsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Daily Summary</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>day_utc</th>
+                <th>actor_id</th>
+                <th>events</th>
+                <th>taps</th>
+                <th>screen_views</th>
+                <th>screen_leaves</th>
+                <th>usage_ms</th>
+                <th>screen_dwell_ms</th>
+              </tr>
+            </thead>
+            <tbody id="dailyBody"></tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Screen Performance</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>screen_name</th>
+                <th>screen_views</th>
+                <th>screen_leaves</th>
+                <th>total_dwell_ms</th>
+                <th>avg_dwell_ms</th>
+                <th>unique_actors</th>
+              </tr>
+            </thead>
+            <tbody id="screensBody"></tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Screen Transitions (A -> B)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>from_screen</th>
+                <th>to_screen</th>
+                <th>transition_count</th>
+                <th>unique_actors</th>
+                <th>avg_gap_sec</th>
+              </tr>
+            </thead>
+            <tbody id="transitionsBody"></tbody>
+          </table>
+          <div class="flow-box">
+            <div class="chart-title">Transition Flow Map</div>
+            <svg
+              id="transitionsFlowSvg"
+              class="flow-svg"
+              viewBox="0 0 1000 360"
+              preserveAspectRatio="xMidYMid meet"
+            ></svg>
+            <div class="flow-metrics">
+              <div class="hint" id="transitionsSelectedHint">Selected screen: all</div>
+              <div class="hint" id="transitionsRatioHint">In/Out ratio: -</div>
+            </div>
+            <div class="hint" id="transitionsFlowHint">Flow map needs transition data.</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Transition Alerts (Spike Detection)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>from_screen</th>
+                <th>to_screen</th>
+                <th>current_count</th>
+                <th>previous_count</th>
+                <th>delta_count</th>
+                <th>growth_ratio</th>
+                <th>window_counts</th>
+                <th>window_growths</th>
+                <th>min_window_growth</th>
+                <th>alert_reason</th>
+                <th>severity</th>
+              </tr>
+            </thead>
+            <tbody id="transitionAlertsBody"></tbody>
+          </table>
+          <div class="hint" id="transitionAlertsHint">No alert data yet.</div>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Daily Trends</h2>
+          <div class="filters" style="margin-bottom: 10px; grid-template-columns: minmax(220px, 320px);">
+            <div>
+              <label for="trendMetric">Right Trend Metric</label>
+              <select id="trendMetric">
+                <option value="usage_ms">Usage Minutes Per Day</option>
+                <option value="tap_count">Tap Events Per Day</option>
+                <option value="screen_view_count">Screen Views Per Day</option>
+                <option value="screen_leave_count">Screen Leaves Per Day</option>
+                <option value="screen_dwell_ms">Screen Dwell Minutes Per Day</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-box">
+              <div class="chart-title">Events Per Day</div>
+              <svg id="eventsTrendSvg" class="chart-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="chart-box">
+              <div id="metricTrendTitle" class="chart-title">Usage Minutes Per Day</div>
+              <svg id="metricTrendSvg" class="chart-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
+            </div>
+          </div>
+          <div class="hint" id="trendHint">Trend needs at least 2 daily points.</div>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Recent Events</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>event_ts_utc</th>
+                <th>event_name</th>
+                <th>screen_name</th>
+                <th>target_name</th>
+                <th>local_user_id</th>
+                <th>install_id</th>
+                <th>duration_ms</th>
+                <th>dwell_ms</th>
+                <th>metadata</th>
+              </tr>
+            </thead>
+            <tbody id="recentBody"></tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const els = {
+        baseUrl: document.getElementById("baseUrl"),
+        adminKey: document.getElementById("adminKey"),
+        days: document.getElementById("days"),
+        recentLimit: document.getElementById("recentLimit"),
+        localUserId: document.getElementById("localUserId"),
+        installId: document.getElementById("installId"),
+        eventName: document.getElementById("eventName"),
+        screenName: document.getElementById("screenName"),
+        screenTopN: document.getElementById("screenTopN"),
+        alertsBaselineDays: document.getElementById("alertsBaselineDays"),
+        alertsConfirmWindows: document.getElementById("alertsConfirmWindows"),
+        alertsMinCurrentCount: document.getElementById("alertsMinCurrentCount"),
+        alertsMinGrowthRatio: document.getElementById("alertsMinGrowthRatio"),
+        alertsMinWindowGrowth: document.getElementById("alertsMinWindowGrowth"),
+        alertsSortBy: document.getElementById("alertsSortBy"),
+        autoRefreshSec: document.getElementById("autoRefreshSec"),
+        autoRefreshEnabled: document.getElementById("autoRefreshEnabled"),
+        statusText: document.getElementById("statusText"),
+        overviewWindow: document.getElementById("overviewWindow"),
+        overviewTotals: document.getElementById("overviewTotals"),
+        topScreensBody: document.getElementById("topScreensBody"),
+        topTargetsBody: document.getElementById("topTargetsBody"),
+        dailyBody: document.getElementById("dailyBody"),
+        screensBody: document.getElementById("screensBody"),
+        transitionsBody: document.getElementById("transitionsBody"),
+        transitionsFlowSvg: document.getElementById("transitionsFlowSvg"),
+        transitionsSelectedHint: document.getElementById("transitionsSelectedHint"),
+        transitionsRatioHint: document.getElementById("transitionsRatioHint"),
+        transitionsFlowHint: document.getElementById("transitionsFlowHint"),
+        transitionAlertsBody: document.getElementById("transitionAlertsBody"),
+        transitionAlertsHint: document.getElementById("transitionAlertsHint"),
+        eventsTrendSvg: document.getElementById("eventsTrendSvg"),
+        metricTrendSvg: document.getElementById("metricTrendSvg"),
+        metricTrendTitle: document.getElementById("metricTrendTitle"),
+        trendMetric: document.getElementById("trendMetric"),
+        trendHint: document.getElementById("trendHint"),
+        recentBody: document.getElementById("recentBody"),
+        refreshAll: document.getElementById("refreshAll"),
+        refreshOverview: document.getElementById("refreshOverview"),
+        refreshDaily: document.getElementById("refreshDaily"),
+        refreshScreens: document.getElementById("refreshScreens"),
+        refreshTransitions: document.getElementById("refreshTransitions"),
+        refreshTransitionAlerts: document.getElementById("refreshTransitionAlerts"),
+        alertPresetStrict: document.getElementById("alertPresetStrict"),
+        alertPresetBalanced: document.getElementById("alertPresetBalanced"),
+        alertPresetAggressive: document.getElementById("alertPresetAggressive"),
+        saveCustomAlertPreset: document.getElementById("saveCustomAlertPreset"),
+        applyCustomAlertPreset: document.getElementById("applyCustomAlertPreset"),
+        refreshRecent: document.getElementById("refreshRecent"),
+        exportDailyCsv: document.getElementById("exportDailyCsv"),
+        exportScreensCsv: document.getElementById("exportScreensCsv"),
+        exportTransitionsCsv: document.getElementById("exportTransitionsCsv"),
+        exportTransitionAlertsCsv: document.getElementById("exportTransitionAlertsCsv"),
+        exportRecentCsv: document.getElementById("exportRecentCsv"),
+        clearScreenFilter: document.getElementById("clearScreenFilter"),
+        clearKey: document.getElementById("clearKey"),
+      };
+
+      const state = {
+        overview: null,
+        daily: null,
+        screens: null,
+        transitions: null,
+        transitionAlerts: null,
+        transitionAlertKeys: new Set(),
+        transitionAlertSeverityByKey: new Map(),
+        recent: null,
+        isRefreshing: false,
+        autoRefreshTimer: null,
+      };
+
+      const TREND_METRICS = {
+        usage_ms: {
+          title: "Usage Minutes Per Day",
+          color: "#5bb5ff",
+          value: (item) => Math.round(Number(item.usage_ms || 0) / 60000),
+        },
+        tap_count: {
+          title: "Tap Events Per Day",
+          color: "#ffb34d",
+          value: (item) => Number(item.tap_count || 0),
+        },
+        screen_view_count: {
+          title: "Screen Views Per Day",
+          color: "#ff7e9b",
+          value: (item) => Number(item.screen_view_count || 0),
+        },
+        screen_leave_count: {
+          title: "Screen Leaves Per Day",
+          color: "#a6f16d",
+          value: (item) => Number(item.screen_leave_count || 0),
+        },
+        screen_dwell_ms: {
+          title: "Screen Dwell Minutes Per Day",
+          color: "#7be0d0",
+          value: (item) => Math.round(Number(item.screen_dwell_ms || 0) / 60000),
+        },
+      };
+
+      const ALERT_PRESETS = {
+        strict: {
+          baseline_days: 21,
+          confirm_windows: 3,
+          min_current_count: 12,
+          min_growth_ratio: 2.5,
+          min_window_growth: 2.0,
+          sort_by: "min_window_growth",
+        },
+        balanced: {
+          baseline_days: 14,
+          confirm_windows: 2,
+          min_current_count: 8,
+          min_growth_ratio: 2.0,
+          min_window_growth: null,
+          sort_by: "severity",
+        },
+        aggressive: {
+          baseline_days: 7,
+          confirm_windows: 1,
+          min_current_count: 4,
+          min_growth_ratio: 1.3,
+          min_window_growth: null,
+          sort_by: "growth_ratio",
+        },
+      };
+      const CUSTOM_ALERT_PRESET_STORAGE_KEY = "telemetry_alert_preset_custom";
+      const ALERT_SORT_BY_OPTIONS = ["severity", "min_window_growth", "growth_ratio", "delta_count", "current_count"];
+
+      function setStatus(text, isError = false) {
+        els.statusText.textContent = text;
+        els.statusText.classList.toggle("error", isError);
+      }
+
+      function normalizeAlertPresetValues(source) {
+        const toFinite = (value, fallback) => {
+          const numberValue = Number(value);
+          return Number.isFinite(numberValue) ? numberValue : fallback;
+        };
+
+        const baselineDays = Math.min(365, Math.max(1, toFinite(source.baseline_days, 14)));
+        const confirmWindows = Math.min(4, Math.max(1, toFinite(source.confirm_windows, 2)));
+        const minCurrentCount = Math.max(1, toFinite(source.min_current_count, 8));
+        const minGrowthRatio = Math.max(0.1, toFinite(source.min_growth_ratio, 2.0));
+        const minWindowGrowthRaw = source.min_window_growth;
+        const minWindowGrowth =
+          minWindowGrowthRaw == null || String(minWindowGrowthRaw).trim() === ""
+            ? null
+            : Math.max(0.1, toFinite(minWindowGrowthRaw, 0.1));
+        const sortByRaw = String(source.sort_by || "severity").trim();
+        const sortBy = ALERT_SORT_BY_OPTIONS.includes(sortByRaw) ? sortByRaw : "severity";
+
+        return {
+          baseline_days: baselineDays,
+          confirm_windows: confirmWindows,
+          min_current_count: minCurrentCount,
+          min_growth_ratio: minGrowthRatio,
+          min_window_growth: minWindowGrowth,
+          sort_by: sortBy,
+        };
+      }
+
+      function getCurrentAlertPresetValues() {
+        return normalizeAlertPresetValues({
+          baseline_days: els.alertsBaselineDays.value,
+          confirm_windows: els.alertsConfirmWindows.value,
+          min_current_count: els.alertsMinCurrentCount.value,
+          min_growth_ratio: els.alertsMinGrowthRatio.value,
+          min_window_growth: els.alertsMinWindowGrowth.value,
+          sort_by: els.alertsSortBy.value,
+        });
+      }
+
+      function applyAlertPresetValuesToInputs(values) {
+        els.alertsBaselineDays.value = String(values.baseline_days);
+        els.alertsConfirmWindows.value = String(values.confirm_windows);
+        els.alertsMinCurrentCount.value = String(values.min_current_count);
+        els.alertsMinGrowthRatio.value = String(values.min_growth_ratio);
+        els.alertsMinWindowGrowth.value =
+          values.min_window_growth == null ? "" : String(values.min_window_growth);
+        els.alertsSortBy.value = values.sort_by || "severity";
+        if (!els.alertsSortBy.value) {
+          els.alertsSortBy.value = "severity";
+        }
+      }
+
+      function persistAlertSettings() {
+        const values = getCurrentAlertPresetValues();
+        applyAlertPresetValuesToInputs(values);
+        localStorage.setItem("telemetry_alerts_baseline_days", String(values.baseline_days));
+        localStorage.setItem("telemetry_alerts_confirm_windows", String(values.confirm_windows));
+        localStorage.setItem("telemetry_alerts_min_current_count", String(values.min_current_count));
+        localStorage.setItem("telemetry_alerts_min_growth_ratio", String(values.min_growth_ratio));
+        if (values.min_window_growth == null) {
+          localStorage.removeItem("telemetry_alerts_min_window_growth");
+        } else {
+          localStorage.setItem("telemetry_alerts_min_window_growth", String(values.min_window_growth));
+        }
+        localStorage.setItem("telemetry_alerts_sort_by", values.sort_by);
+      }
+
+      async function applyAlertPresetValues(values, presetName) {
+        const normalizedValues = normalizeAlertPresetValues(values);
+        applyAlertPresetValuesToInputs(normalizedValues);
+        persistAlertSettings();
+        setStatus(`Applied ${presetName} alert preset. Refreshing alerts...`);
+        try {
+          await refreshTransitionAlerts();
+          setStatus(`Applied ${presetName} alert preset and refreshed alerts.`);
+        } catch (err) {
+          setStatus(`Preset refresh failed: ${err}`, true);
+        }
+      }
+
+      async function applyAlertPreset(presetKey) {
+        const preset = ALERT_PRESETS[presetKey];
+        if (!preset) {
+          return;
+        }
+        const presetName = presetKey.charAt(0).toUpperCase() + presetKey.slice(1);
+        await applyAlertPresetValues(preset, presetName);
+      }
+
+      function saveCustomAlertPreset() {
+        const values = getCurrentAlertPresetValues();
+        localStorage.setItem(CUSTOM_ALERT_PRESET_STORAGE_KEY, JSON.stringify(values));
+        setStatus("Custom alert preset saved.");
+      }
+
+      async function applyCustomAlertPreset() {
+        const raw = localStorage.getItem(CUSTOM_ALERT_PRESET_STORAGE_KEY);
+        if (!raw) {
+          setStatus("No custom alert preset saved yet.", true);
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          await applyAlertPresetValues(parsed || {}, "Custom");
+        } catch (_) {
+          setStatus("Custom alert preset is invalid. Save it again from current filters.", true);
+        }
+      }
+
+      function toCsvCell(value) {
+        const text = value == null ? "" : String(value);
+        if (!/[",\n]/.test(text)) {
+          return text;
+        }
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+
+      function downloadCsv(filename, headers, rows) {
+        const lines = [headers.map((h) => toCsvCell(h)).join(",")];
+        rows.forEach((row) => {
+          lines.push(row.map((cell) => toCsvCell(cell)).join(","));
+        });
+        const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function toIsoLocal(value) {
+        if (!value) return "-";
+        const dt = new Date(value);
+        if (Number.isNaN(dt.getTime())) return String(value);
+        return dt.toLocaleString();
+      }
+
+      function msToHuman(ms) {
+        const n = Number(ms || 0);
+        if (!Number.isFinite(n) || n <= 0) return "0";
+        const sec = Math.floor(n / 1000);
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        if (h > 0) return `${h}h ${m}m ${s}s`;
+        if (m > 0) return `${m}m ${s}s`;
+        return `${s}s`;
+      }
+
+      function formatWindowCounts(counts) {
+        if (!Array.isArray(counts) || counts.length === 0) {
+          return "-";
+        }
+        return counts.map((value) => Number(value || 0).toLocaleString()).join(" -> ");
+      }
+
+      function formatWindowGrowths(growths) {
+        if (!Array.isArray(growths) || growths.length === 0) {
+          return "-";
+        }
+        return growths.map((value) => `${Number(value || 0).toFixed(3)}x`).join(" -> ");
+      }
+
+      function buildQuery(params) {
+        const q = new URLSearchParams();
+        Object.entries(params).forEach(([k, v]) => {
+          if (v === undefined || v === null) return;
+          const raw = String(v).trim();
+          if (raw.length === 0) return;
+          q.set(k, raw);
+        });
+        return q.toString();
+      }
+
+      function readFilters() {
+        return {
+          days: els.days.value || "14",
+          limit: els.recentLimit.value || "100",
+          top_n: els.screenTopN.value || "100",
+          baseline_days: els.alertsBaselineDays.value || "14",
+          confirm_windows: els.alertsConfirmWindows.value || "2",
+          min_current_count: els.alertsMinCurrentCount.value || "8",
+          min_growth_ratio: els.alertsMinGrowthRatio.value || "2.0",
+          min_window_growth: els.alertsMinWindowGrowth.value || "",
+          sort_by: els.alertsSortBy.value || "severity",
+          local_user_id: els.localUserId.value.trim(),
+          install_id: els.installId.value.trim(),
+          event_name: els.eventName.value.trim(),
+          screen_name: els.screenName.value.trim(),
+        };
+      }
+
+      function emptyTable(tbody, colSpan, message) {
+        tbody.innerHTML = "";
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = colSpan;
+        td.style.color = "var(--muted)";
+        td.textContent = message;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      function svgEl(name, attrs = {}) {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.entries(attrs).forEach(([k, v]) => {
+          el.setAttribute(k, String(v));
+        });
+        return el;
+      }
+
+      function renderLineTrend(svg, points, color) {
+        svg.innerHTML = "";
+        const width = 700;
+        const height = 180;
+        const padX = 36;
+        const padY = 16;
+
+        if (!points || points.length < 2) {
+          const text = svgEl("text", {
+            x: width / 2,
+            y: height / 2,
+            "text-anchor": "middle",
+            fill: "#9bb3d6",
+            "font-size": "12",
+          });
+          text.textContent = "Need at least 2 points";
+          svg.appendChild(text);
+          return;
+        }
+
+        const values = points.map((p) => Number(p.value || 0));
+        const maxV = Math.max(...values, 1);
+        const minV = 0;
+        const plotW = width - padX * 2;
+        const plotH = height - padY * 2;
+
+        for (let i = 0; i <= 4; i += 1) {
+          const y = padY + (plotH * i) / 4;
+          const g = svgEl("line", {
+            x1: padX,
+            y1: y,
+            x2: width - padX,
+            y2: y,
+            stroke: "#274267",
+            "stroke-width": "1",
+          });
+          svg.appendChild(g);
+        }
+
+        const coords = points.map((p, idx) => {
+          const x = padX + (plotW * idx) / (points.length - 1);
+          const ratio = (Number(p.value || 0) - minV) / (maxV - minV || 1);
+          const y = height - padY - ratio * plotH;
+          return { x, y, label: p.label, value: Number(p.value || 0) };
+        });
+
+        const pathD = coords
+          .map((c, idx) => `${idx === 0 ? "M" : "L"}${c.x.toFixed(2)} ${c.y.toFixed(2)}`)
+          .join(" ");
+        const path = svgEl("path", {
+          d: pathD,
+          fill: "none",
+          stroke: color,
+          "stroke-width": "2.2",
+        });
+        svg.appendChild(path);
+
+        coords.forEach((c, idx) => {
+          const dot = svgEl("circle", {
+            cx: c.x,
+            cy: c.y,
+            r: "3",
+            fill: color,
+          });
+          svg.appendChild(dot);
+
+          if (idx === 0 || idx === coords.length - 1) {
+            const t = svgEl("text", {
+              x: c.x,
+              y: height - 3,
+              "text-anchor": idx === 0 ? "start" : "end",
+              fill: "#9bb3d6",
+              "font-size": "11",
+            });
+            t.textContent = c.label.slice(5);
+            svg.appendChild(t);
+          }
+        });
+
+        const maxLabel = svgEl("text", {
+          x: width - 6,
+          y: 12,
+          "text-anchor": "end",
+          fill: "#9bb3d6",
+          "font-size": "11",
+        });
+        maxLabel.textContent = `max ${maxV.toLocaleString()}`;
+        svg.appendChild(maxLabel);
+      }
+
+      function truncateLabel(text, maxLength = 18) {
+        const raw = String(text || "");
+        if (raw.length <= maxLength) {
+          return raw;
+        }
+        return `${raw.slice(0, Math.max(4, maxLength - 1))}\u2026`;
+      }
+
+      function applyScreenFilter(screenName, triggerRefresh = true) {
+        const normalized = String(screenName || "").trim();
+        els.screenName.value = normalized;
+        localStorage.setItem("telemetry_screen_name", normalized);
+        if (triggerRefresh) {
+          setStatus(
+            normalized ? `Applying screen filter: ${normalized}` : "Clearing screen filter..."
+          );
+          refreshAll().catch((err) => setStatus(`Screen filter refresh failed: ${err}`, true));
+        }
+      }
+
+      function getActiveScreenFilter() {
+        return String(els.screenName.value || "").trim();
+      }
+
+      function transitionEdgeKey(fromScreen, toScreen) {
+        return `${String(fromScreen || "").trim()}>>${String(toScreen || "").trim()}`;
+      }
+
+      function severityRank(level) {
+        const key = String(level || "").toLowerCase();
+        if (key === "critical") return 4;
+        if (key === "high") return 3;
+        if (key === "medium") return 2;
+        if (key === "low") return 1;
+        return 0;
+      }
+
+      function severityColor(level) {
+        const key = String(level || "").toLowerCase();
+        if (key === "critical") return "#ff4d6d";
+        if (key === "high") return "#ff8a63";
+        if (key === "medium") return "#ffb34d";
+        return "#9bb3d6";
+      }
+
+      function severityBackground(level) {
+        const key = String(level || "").toLowerCase();
+        if (key === "critical") return "rgba(255,77,109,0.16)";
+        if (key === "high") return "rgba(255,138,99,0.14)";
+        if (key === "medium") return "rgba(255,179,77,0.12)";
+        return "rgba(155,179,214,0.08)";
+      }
+
+      function renderTransitionsFlow(rows) {
+        const svg = els.transitionsFlowSvg;
+        svg.innerHTML = "";
+        const width = 1000;
+        const height = 360;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) * 0.34;
+        const activeScreen = getActiveScreenFilter();
+
+        els.transitionsSelectedHint.textContent = activeScreen
+          ? `Selected screen: ${activeScreen}`
+          : "Selected screen: all";
+
+        const sourceRows = (rows || []).filter((r) => Number(r.transition_count || 0) > 0);
+        if (sourceRows.length === 0) {
+          const text = svgEl("text", {
+            x: centerX,
+            y: centerY,
+            "text-anchor": "middle",
+            fill: "#9bb3d6",
+            "font-size": "13",
+          });
+          text.textContent = "No transition edges";
+          svg.appendChild(text);
+          els.transitionsFlowHint.textContent = "Flow map needs transition data.";
+          els.transitionsRatioHint.textContent = "In/Out ratio: -";
+          return;
+        }
+
+        if (activeScreen) {
+          const inCount = sourceRows.reduce(
+            (acc, row) =>
+              acc +
+              (String(row.to_screen || "").trim() === activeScreen
+                ? Number(row.transition_count || 0)
+                : 0),
+            0
+          );
+          const outCount = sourceRows.reduce(
+            (acc, row) =>
+              acc +
+              (String(row.from_screen || "").trim() === activeScreen
+                ? Number(row.transition_count || 0)
+                : 0),
+            0
+          );
+          const total = inCount + outCount;
+          const inPct = total > 0 ? ((inCount / total) * 100).toFixed(1) : "0.0";
+          const outPct = total > 0 ? ((outCount / total) * 100).toFixed(1) : "0.0";
+          els.transitionsRatioHint.textContent =
+            `In/Out ratio: ${inCount.toLocaleString()} : ${outCount.toLocaleString()} ` +
+            `(in ${inPct}%, out ${outPct}%)`;
+        } else {
+          els.transitionsRatioHint.textContent = "In/Out ratio: -";
+        }
+
+        const edgeRows = sourceRows.slice(0, 80);
+        const nodeWeight = new Map();
+        edgeRows.forEach((row) => {
+          const count = Number(row.transition_count || 0);
+          const from = String(row.from_screen || "");
+          const to = String(row.to_screen || "");
+          nodeWeight.set(from, Number(nodeWeight.get(from) || 0) + count);
+          nodeWeight.set(to, Number(nodeWeight.get(to) || 0) + count);
+        });
+
+        const selectedNodes = Array.from(nodeWeight.entries())
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .slice(0, 12)
+          .map((entry) => entry[0]);
+        const nodeSet = new Set(selectedNodes);
+
+        const edges = edgeRows.filter(
+          (row) => nodeSet.has(String(row.from_screen || "")) && nodeSet.has(String(row.to_screen || ""))
+        );
+
+        if (edges.length === 0) {
+          const text = svgEl("text", {
+            x: centerX,
+            y: centerY,
+            "text-anchor": "middle",
+            fill: "#9bb3d6",
+            "font-size": "13",
+          });
+          text.textContent = "No edges for top nodes";
+          svg.appendChild(text);
+          els.transitionsFlowHint.textContent = "Top transitions do not overlap top nodes.";
+          return;
+        }
+
+        const defs = svgEl("defs");
+
+        function addArrowMarker(id, fill) {
+          const marker = svgEl("marker", {
+            id,
+            markerWidth: "8",
+            markerHeight: "8",
+            refX: "7",
+            refY: "4",
+            orient: "auto",
+            markerUnits: "strokeWidth",
+          });
+          marker.appendChild(svgEl("path", { d: "M0,0 L8,4 L0,8 z", fill }));
+          defs.appendChild(marker);
+        }
+
+        addArrowMarker("flowArrowDefault", "#7bb7ff");
+        addArrowMarker("flowArrowOutgoing", "#4fd18b");
+        addArrowMarker("flowArrowIncoming", "#ffb34d");
+        addArrowMarker("flowArrowMuted", "#43658f");
+        addArrowMarker("flowArrowAlert", "#ff4d6d");
+        svg.appendChild(defs);
+
+        const positions = new Map();
+        selectedNodes.forEach((name, idx) => {
+          const angle = (2 * Math.PI * idx) / selectedNodes.length - Math.PI / 2;
+          const x = centerX + Math.cos(angle) * radius;
+          const y = centerY + Math.sin(angle) * radius;
+          positions.set(name, { x, y, angle });
+        });
+
+        const maxEdge = Math.max(...edges.map((r) => Number(r.transition_count || 0)), 1);
+        const relatedNodes = new Set();
+        if (activeScreen) {
+          edges.forEach((row) => {
+            const from = String(row.from_screen || "");
+            const to = String(row.to_screen || "");
+            if (from === activeScreen || to === activeScreen) {
+              relatedNodes.add(from);
+              relatedNodes.add(to);
+            }
+          });
+          relatedNodes.add(activeScreen);
+        }
+
+        edges.forEach((row, idx) => {
+          const from = String(row.from_screen || "");
+          const to = String(row.to_screen || "");
+          const fromPos = positions.get(from);
+          const toPos = positions.get(to);
+          if (!fromPos || !toPos) {
+            return;
+          }
+
+          const count = Number(row.transition_count || 0);
+          const dx = toPos.x - fromPos.x;
+          const dy = toPos.y - fromPos.y;
+          const length = Math.hypot(dx, dy) || 1;
+          const perpX = -dy / length;
+          const perpY = dx / length;
+          const curve = Math.min(70, length * 0.22) * (idx % 2 === 0 ? 1 : -1);
+          const cx = (fromPos.x + toPos.x) / 2 + perpX * curve;
+          const cy = (fromPos.y + toPos.y) / 2 + perpY * curve;
+          const baseStrokeWidth = 1.4 + (count / maxEdge) * 7.2;
+
+          let stroke = "rgba(123,183,255,0.55)";
+          let markerId = "flowArrowDefault";
+          let strokeWidth = baseStrokeWidth;
+          let opacity = 1;
+          if (activeScreen) {
+            const isOutgoing = from === activeScreen;
+            const isIncoming = to === activeScreen;
+            if (isOutgoing && isIncoming) {
+              stroke = "rgba(79,209,139,0.95)";
+              markerId = "flowArrowOutgoing";
+            } else if (isOutgoing) {
+              stroke = "rgba(79,209,139,0.9)";
+              markerId = "flowArrowOutgoing";
+            } else if (isIncoming) {
+              stroke = "rgba(255,179,77,0.9)";
+              markerId = "flowArrowIncoming";
+            } else {
+              stroke = "rgba(80,113,150,0.25)";
+              markerId = "flowArrowMuted";
+              strokeWidth = Math.max(1.0, baseStrokeWidth * 0.38);
+              opacity = 0.55;
+            }
+          }
+
+          const edgeKey = transitionEdgeKey(from, to);
+          const alertSeverity = state.transitionAlertSeverityByKey.get(edgeKey);
+          if (alertSeverity) {
+            stroke = severityColor(alertSeverity);
+            markerId = "flowArrowAlert";
+            strokeWidth = Math.max(strokeWidth, baseStrokeWidth + 1.2);
+            opacity = 1;
+          }
+
+          const path = svgEl("path", {
+            d: `M ${fromPos.x.toFixed(2)} ${fromPos.y.toFixed(2)} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${toPos.x.toFixed(2)} ${toPos.y.toFixed(2)}`,
+            fill: "none",
+            stroke,
+            "stroke-width": strokeWidth.toFixed(2),
+            opacity: opacity.toFixed(2),
+            "marker-end": `url(#${markerId})`,
+          });
+          const title = svgEl("title");
+          title.textContent = `${from} -> ${to}: ${count}`;
+          path.appendChild(title);
+          svg.appendChild(path);
+        });
+
+        const maxNodeWeight = Math.max(...selectedNodes.map((name) => Number(nodeWeight.get(name) || 0)), 1);
+        selectedNodes.forEach((name) => {
+          const pos = positions.get(name);
+          if (!pos) {
+            return;
+          }
+          const weight = Number(nodeWeight.get(name) || 0);
+          const nodeRadius = 8 + (weight / maxNodeWeight) * 10;
+
+          let nodeFill = "rgba(79,209,139,0.18)";
+          let nodeStroke = "#4fd18b";
+          let nodeOpacity = 1;
+          if (activeScreen) {
+            if (name === activeScreen) {
+              nodeFill = "rgba(255,211,109,0.34)";
+              nodeStroke = "#ffd36d";
+            } else if (relatedNodes.has(name)) {
+              nodeFill = "rgba(79,209,139,0.24)";
+              nodeStroke = "#74e5a6";
+            } else {
+              nodeFill = "rgba(68,97,84,0.12)";
+              nodeStroke = "#446154";
+              nodeOpacity = 0.5;
+            }
+          }
+
+          const circle = svgEl("circle", {
+            cx: pos.x.toFixed(2),
+            cy: pos.y.toFixed(2),
+            r: nodeRadius.toFixed(2),
+            fill: nodeFill,
+            stroke: nodeStroke,
+            "stroke-width": "1.6",
+            opacity: nodeOpacity.toFixed(2),
+          });
+          const circleTitle = svgEl("title");
+          circleTitle.textContent = `${name}: ${weight}`;
+          circle.appendChild(circleTitle);
+          circle.style.cursor = "pointer";
+          circle.addEventListener("click", () =>
+            applyScreenFilter(activeScreen === name ? "" : name, true)
+          );
+          svg.appendChild(circle);
+
+          const lx = pos.x + Math.cos(pos.angle) * (nodeRadius + 10);
+          const ly = pos.y + Math.sin(pos.angle) * (nodeRadius + 4);
+          const isNodeDimmed = !!activeScreen && name !== activeScreen && !relatedNodes.has(name);
+          const text = svgEl("text", {
+            x: lx.toFixed(2),
+            y: ly.toFixed(2),
+            fill: isNodeDimmed ? "#7690b1" : "#eaf2ff",
+            "font-size": "11",
+            "text-anchor": pos.x >= centerX ? "start" : "end",
+            opacity: isNodeDimmed ? "0.62" : "1.0",
+          });
+          text.textContent = truncateLabel(name, 20);
+          text.style.cursor = "pointer";
+          text.addEventListener("click", () =>
+            applyScreenFilter(activeScreen === name ? "" : name, true)
+          );
+          svg.appendChild(text);
+        });
+
+        els.transitionsFlowHint.textContent = activeScreen
+          ? `Flow map filtered by "${activeScreen}" with ${edges.length} visible edges.`
+          : `Flow map shows ${selectedNodes.length} nodes and ${edges.length} edges (by transition_count).`;
+      }
+
+      function aggregateDailyByDay(rows) {
+        const byDay = new Map();
+        rows.forEach((row) => {
+          const rawDay = row.day_utc ? String(row.day_utc) : "";
+          const dayKey = rawDay.length >= 10 ? rawDay.slice(0, 10) : rawDay;
+          if (!dayKey) return;
+
+          if (!byDay.has(dayKey)) {
+            byDay.set(dayKey, {
+              day: dayKey,
+              event_count: 0,
+              tap_count: 0,
+              screen_view_count: 0,
+              screen_leave_count: 0,
+              usage_ms: 0,
+              screen_dwell_ms: 0,
+            });
+          }
+          const bucket = byDay.get(dayKey);
+          bucket.event_count += Number(row.event_count || 0);
+          bucket.tap_count += Number(row.tap_count || 0);
+          bucket.screen_view_count += Number(row.screen_view_count || 0);
+          bucket.screen_leave_count += Number(row.screen_leave_count || 0);
+          bucket.usage_ms += Number(row.usage_ms || 0);
+          bucket.screen_dwell_ms += Number(row.screen_dwell_ms || 0);
+        });
+
+        return Array.from(byDay.values()).sort((a, b) => a.day.localeCompare(b.day));
+      }
+
+      function renderDailyTrends(rows) {
+        const merged = aggregateDailyByDay(rows || []);
+        if (merged.length < 2) {
+          renderLineTrend(els.eventsTrendSvg, [], "#4fd18b");
+          renderLineTrend(els.metricTrendSvg, [], "#5bb5ff");
+          els.metricTrendTitle.textContent = "Trend Metric";
+          els.trendHint.textContent = "Trend needs at least 2 daily points.";
+          return;
+        }
+
+        const eventPoints = merged.map((d) => ({ label: d.day, value: d.event_count }));
+        const metricKey = els.trendMetric.value in TREND_METRICS ? els.trendMetric.value : "usage_ms";
+        const metric = TREND_METRICS[metricKey];
+        const metricPoints = merged.map((d) => ({ label: d.day, value: metric.value(d) }));
+
+        renderLineTrend(els.eventsTrendSvg, eventPoints, "#4fd18b");
+        renderLineTrend(els.metricTrendSvg, metricPoints, metric.color);
+        els.metricTrendTitle.textContent = metric.title;
+        els.trendHint.textContent = `${merged.length} day points in current filter.`;
+      }
+
+      async function apiGet(path, params = {}) {
+        const base = (els.baseUrl.value || window.location.origin).trim().replace(/\/+$/, "");
+        const query = buildQuery(params);
+        const url = query ? `${base}${path}?${query}` : `${base}${path}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "X-Admin-Key": els.adminKey.value.trim(),
+          },
+        });
+
+        if (!response.ok) {
+          let detail = "";
+          try {
+            const payload = await response.json();
+            detail = payload.detail ? ` (${payload.detail})` : "";
+          } catch (_) {
+            detail = "";
+          }
+          throw new Error(`HTTP ${response.status}${detail}`);
+        }
+        return response.json();
+      }
+
+      function renderOverview(data) {
+        state.overview = data;
+        const totals = data.totals || {};
+        els.overviewWindow.textContent =
+          `Window: ${toIsoLocal(data.window_start_utc)} -> ${toIsoLocal(data.window_end_utc)}`;
+
+        const cardKeys = [
+          ["events", "Total Events", false],
+          ["taps", "Tap Events", false],
+          ["screen_views", "Screen Views", false],
+          ["screen_leaves", "Screen Leaves", false],
+          ["usage_segments", "Usage Segments", false],
+          ["usage_ms", "Usage Time", true],
+          ["screen_dwell_ms", "Screen Dwell", true],
+          ["unique_local_users", "Unique Local Users", false],
+          ["unique_installs", "Unique Installs", false],
+          ["unique_app_sessions", "Unique App Sessions", false],
+        ];
+
+        els.overviewTotals.innerHTML = "";
+        cardKeys.forEach(([key, label, isMs]) => {
+          const v = Number(totals[key] || 0);
+          const card = document.createElement("div");
+          card.className = "metric";
+          const k = document.createElement("div");
+          k.className = "k";
+          k.textContent = label;
+          const val = document.createElement("div");
+          val.className = "v";
+          val.textContent = isMs ? `${v.toLocaleString()} (${msToHuman(v)})` : v.toLocaleString();
+          card.appendChild(k);
+          card.appendChild(val);
+          els.overviewTotals.appendChild(card);
+        });
+
+        const screens = data.top_screens || [];
+        if (screens.length === 0) {
+          emptyTable(els.topScreensBody, 2, "No screen data in current filter.");
+        } else {
+          els.topScreensBody.innerHTML = "";
+          screens.forEach((item) => {
+            const tr = document.createElement("tr");
+            const tdName = document.createElement("td");
+            tdName.textContent = item.key || "-";
+            const tdCount = document.createElement("td");
+            tdCount.textContent = Number(item.count || 0).toLocaleString();
+            tr.appendChild(tdName);
+            tr.appendChild(tdCount);
+            els.topScreensBody.appendChild(tr);
+          });
+        }
+
+        const targets = data.top_targets || [];
+        if (targets.length === 0) {
+          emptyTable(els.topTargetsBody, 2, "No target data in current filter.");
+        } else {
+          els.topTargetsBody.innerHTML = "";
+          targets.forEach((item) => {
+            const tr = document.createElement("tr");
+            const tdName = document.createElement("td");
+            tdName.textContent = item.key || "-";
+            const tdCount = document.createElement("td");
+            tdCount.textContent = Number(item.count || 0).toLocaleString();
+            tr.appendChild(tdName);
+            tr.appendChild(tdCount);
+            els.topTargetsBody.appendChild(tr);
+          });
+        }
+      }
+
+      function renderDaily(data) {
+        state.daily = data;
+        const rows = data.rows || [];
+        if (rows.length === 0) {
+          emptyTable(els.dailyBody, 8, "No daily records in current filter.");
+          renderDailyTrends([]);
+          return;
+        }
+        els.dailyBody.innerHTML = "";
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          const values = [
+            toIsoLocal(row.day_utc),
+            row.actor_id || "-",
+            Number(row.event_count || 0).toLocaleString(),
+            Number(row.tap_count || 0).toLocaleString(),
+            Number(row.screen_view_count || 0).toLocaleString(),
+            Number(row.screen_leave_count || 0).toLocaleString(),
+            `${Number(row.usage_ms || 0).toLocaleString()} (${msToHuman(row.usage_ms || 0)})`,
+            `${Number(row.screen_dwell_ms || 0).toLocaleString()} (${msToHuman(row.screen_dwell_ms || 0)})`,
+          ];
+          values.forEach((v) => {
+            const td = document.createElement("td");
+            td.textContent = String(v);
+            tr.appendChild(td);
+          });
+          els.dailyBody.appendChild(tr);
+        });
+        renderDailyTrends(rows);
+      }
+
+      function renderScreens(data) {
+        state.screens = data;
+        const rows = data.rows || [];
+        if (rows.length === 0) {
+          emptyTable(els.screensBody, 6, "No screen metrics in current filter.");
+          return;
+        }
+        els.screensBody.innerHTML = "";
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          const values = [
+            row.screen_name || "-",
+            Number(row.screen_views || 0).toLocaleString(),
+            Number(row.screen_leaves || 0).toLocaleString(),
+            `${Number(row.total_dwell_ms || 0).toLocaleString()} (${msToHuman(row.total_dwell_ms || 0)})`,
+            `${Number(row.avg_dwell_ms || 0).toLocaleString()} (${msToHuman(row.avg_dwell_ms || 0)})`,
+            Number(row.unique_actors || 0).toLocaleString(),
+          ];
+          values.forEach((v, idx) => {
+            const td = document.createElement("td");
+            td.textContent = String(v);
+            if (idx === 0) {
+              td.className = "mono";
+            }
+            tr.appendChild(td);
+          });
+          els.screensBody.appendChild(tr);
+        });
+      }
+
+      function renderTransitions(data) {
+        state.transitions = data;
+        const rows = data.rows || [];
+        if (rows.length === 0) {
+          emptyTable(els.transitionsBody, 5, "No transitions in current filter.");
+          renderTransitionsFlow([]);
+          return;
+        }
+        els.transitionsBody.innerHTML = "";
+        rows.forEach((row) => {
+          const edgeKey = transitionEdgeKey(row.from_screen, row.to_screen);
+          const alertSeverity = state.transitionAlertSeverityByKey.get(edgeKey);
+          const tr = document.createElement("tr");
+          if (alertSeverity) {
+            tr.style.background = "rgba(255,77,109,0.12)";
+          }
+          const values = [
+            row.from_screen || "-",
+            row.to_screen || "-",
+            Number(row.transition_count || 0).toLocaleString(),
+            Number(row.unique_actors || 0).toLocaleString(),
+            Number(row.avg_gap_sec || 0).toLocaleString(),
+          ];
+          values.forEach((v, idx) => {
+            const td = document.createElement("td");
+            td.textContent = String(v);
+            if (idx === 0 || idx === 1) {
+              td.className = "mono";
+            }
+            if (alertSeverity) {
+              td.style.color = severityColor(alertSeverity);
+              td.style.fontWeight = idx < 2 ? "600" : "500";
+            }
+            tr.appendChild(td);
+          });
+          els.transitionsBody.appendChild(tr);
+        });
+        renderTransitionsFlow(rows);
+      }
+
+      function renderTransitionAlerts(data) {
+        state.transitionAlerts = data;
+        const rows = data.rows || [];
+        const confirmWindows = Math.max(1, Number(data.confirm_windows || 1));
+        const keySet = new Set();
+        const severityMap = new Map();
+        rows.forEach((row) => {
+          const key = transitionEdgeKey(row.from_screen, row.to_screen);
+          keySet.add(key);
+          severityMap.set(key, String(row.severity || "low").toLowerCase());
+        });
+        state.transitionAlertKeys = keySet;
+        state.transitionAlertSeverityByKey = severityMap;
+
+        const sortBy = String(data.sort_by || "severity");
+        const weakGrowthFilter =
+          data.min_window_growth == null ? "off" : `${Number(data.min_window_growth || 0).toFixed(3)}x`;
+        if (rows.length === 0) {
+          emptyTable(els.transitionAlertsBody, 11, "No transition alerts in current filter.");
+          els.transitionAlertsHint.textContent =
+            `No alert spikes detected (confirm windows: ${confirmWindows}, sort: ${sortBy}, min weak growth: ${weakGrowthFilter}).`;
+        } else {
+          els.transitionAlertsBody.innerHTML = "";
+          rows.forEach((row) => {
+            const tr = document.createElement("tr");
+            const level = String(row.severity || "low").toLowerCase();
+            tr.style.background = severityBackground(level);
+            const values = [
+              row.from_screen || "-",
+              row.to_screen || "-",
+              Number(row.current_count || 0).toLocaleString(),
+              Number(row.previous_count || 0).toLocaleString(),
+              Number(row.delta_count || 0).toLocaleString(),
+              Number(row.growth_ratio || 0).toFixed(3),
+              formatWindowCounts(row.window_counts),
+              formatWindowGrowths(row.window_growths),
+              `${Number(row.min_window_growth || 0).toFixed(3)}x`,
+              row.alert_reason || "-",
+              level,
+            ];
+            values.forEach((v, idx) => {
+              const td = document.createElement("td");
+              td.textContent = String(v);
+              if (idx === 0 || idx === 1 || idx === 6 || idx === 7 || idx === 8) {
+                td.className = "mono";
+              }
+              if (idx === 10) {
+                td.style.color = severityColor(level);
+                td.style.fontWeight = "700";
+              }
+              tr.appendChild(td);
+            });
+            els.transitionAlertsBody.appendChild(tr);
+          });
+
+          const critical = rows.filter((r) => String(r.severity || "").toLowerCase() === "critical").length;
+          const high = rows.filter((r) => String(r.severity || "").toLowerCase() === "high").length;
+          els.transitionAlertsHint.textContent =
+            `Detected ${rows.length} alert transitions (critical: ${critical}, high: ${high}, confirm windows: ${confirmWindows}, sort: ${sortBy}, min weak growth: ${weakGrowthFilter}).`;
+        }
+
+        if (state.transitions) {
+          renderTransitions(state.transitions);
+        } else {
+          renderTransitionsFlow([]);
+        }
+      }
+
+      function renderRecent(data) {
+        state.recent = data;
+        const rows = data.events || [];
+        if (rows.length === 0) {
+          emptyTable(els.recentBody, 9, "No events in current filter.");
+          return;
+        }
+        els.recentBody.innerHTML = "";
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          const fields = [
+            toIsoLocal(row.event_ts_utc),
+            row.event_name || "-",
+            row.screen_name || "-",
+            row.target_name || "-",
+            row.local_user_id || "-",
+            row.install_id || "-",
+            row.duration_ms == null ? "-" : Number(row.duration_ms).toLocaleString(),
+            row.dwell_ms == null ? "-" : Number(row.dwell_ms).toLocaleString(),
+            JSON.stringify(row.metadata || {}),
+          ];
+          fields.forEach((val, idx) => {
+            const td = document.createElement("td");
+            td.textContent = String(val);
+            if (idx === 5 || idx === 8) {
+              td.className = "mono";
+            }
+            tr.appendChild(td);
+          });
+          els.recentBody.appendChild(tr);
+        });
+      }
+
+      function exportDailyCsv() {
+        const rows = (state.daily && state.daily.rows) || [];
+        if (rows.length === 0) {
+          setStatus("No daily data to export.", true);
+          return;
+        }
+        const headers = [
+          "day_utc",
+          "actor_id",
+          "event_count",
+          "tap_count",
+          "screen_view_count",
+          "screen_leave_count",
+          "usage_segments",
+          "usage_ms",
+          "screen_dwell_ms",
+        ];
+        const data = rows.map((r) => [
+          r.day_utc,
+          r.actor_id,
+          r.event_count,
+          r.tap_count,
+          r.screen_view_count,
+          r.screen_leave_count,
+          r.usage_segments,
+          r.usage_ms,
+          r.screen_dwell_ms,
+        ]);
+        downloadCsv(`telemetry_daily_${Date.now()}.csv`, headers, data);
+        setStatus("Daily CSV exported.");
+      }
+
+      function exportRecentCsv() {
+        const rows = (state.recent && state.recent.events) || [];
+        if (rows.length === 0) {
+          setStatus("No recent events to export.", true);
+          return;
+        }
+        const headers = [
+          "event_ts_utc",
+          "event_name",
+          "screen_name",
+          "target_name",
+          "local_user_id",
+          "install_id",
+          "app_session_id",
+          "duration_ms",
+          "dwell_ms",
+          "metadata",
+        ];
+        const data = rows.map((r) => [
+          r.event_ts_utc,
+          r.event_name,
+          r.screen_name,
+          r.target_name,
+          r.local_user_id,
+          r.install_id,
+          r.app_session_id,
+          r.duration_ms,
+          r.dwell_ms,
+          JSON.stringify(r.metadata || {}),
+        ]);
+        downloadCsv(`telemetry_recent_${Date.now()}.csv`, headers, data);
+        setStatus("Recent CSV exported.");
+      }
+
+      function exportScreensCsv() {
+        const rows = (state.screens && state.screens.rows) || [];
+        if (rows.length === 0) {
+          setStatus("No screen metrics to export.", true);
+          return;
+        }
+        const headers = [
+          "screen_name",
+          "screen_views",
+          "screen_leaves",
+          "total_dwell_ms",
+          "avg_dwell_ms",
+          "unique_actors",
+        ];
+        const data = rows.map((r) => [
+          r.screen_name,
+          r.screen_views,
+          r.screen_leaves,
+          r.total_dwell_ms,
+          r.avg_dwell_ms,
+          r.unique_actors,
+        ]);
+        downloadCsv(`telemetry_screens_${Date.now()}.csv`, headers, data);
+        setStatus("Screens CSV exported.");
+      }
+
+      function exportTransitionsCsv() {
+        const rows = (state.transitions && state.transitions.rows) || [];
+        if (rows.length === 0) {
+          setStatus("No transitions to export.", true);
+          return;
+        }
+        const headers = ["from_screen", "to_screen", "transition_count", "unique_actors", "avg_gap_sec"];
+        const data = rows.map((r) => [
+          r.from_screen,
+          r.to_screen,
+          r.transition_count,
+          r.unique_actors,
+          r.avg_gap_sec,
+        ]);
+        downloadCsv(`telemetry_transitions_${Date.now()}.csv`, headers, data);
+        setStatus("Transitions CSV exported.");
+      }
+
+      function exportTransitionAlertsCsv() {
+        const rows = (state.transitionAlerts && state.transitionAlerts.rows) || [];
+        if (rows.length === 0) {
+          setStatus("No transition alerts to export.", true);
+          return;
+        }
+        const headers = [
+          "from_screen",
+          "to_screen",
+          "current_count",
+          "previous_count",
+          "delta_count",
+          "growth_ratio",
+          "window_counts",
+          "window_growths",
+          "min_window_growth",
+          "alert_reason",
+          "severity",
+        ];
+        const data = rows.map((r) => [
+          r.from_screen,
+          r.to_screen,
+          r.current_count,
+          r.previous_count,
+          r.delta_count,
+          r.growth_ratio,
+          formatWindowCounts(r.window_counts),
+          formatWindowGrowths(r.window_growths),
+          Number(r.min_window_growth || 0).toFixed(3),
+          r.alert_reason || "",
+          r.severity,
+        ]);
+        downloadCsv(`telemetry_transition_alerts_${Date.now()}.csv`, headers, data);
+        setStatus("Transition alerts CSV exported.");
+      }
+
+      async function refreshOverview() {
+        const f = readFilters();
+        const data = await apiGet("/telemetry/admin/overview", {
+          days: f.days,
+          local_user_id: f.local_user_id,
+          install_id: f.install_id,
+          event_name: f.event_name,
+          screen_name: f.screen_name,
+        });
+        renderOverview(data);
+      }
+
+      async function refreshDaily() {
+        const f = readFilters();
+        const data = await apiGet("/telemetry/admin/daily", {
+          days: f.days,
+          local_user_id: f.local_user_id,
+          install_id: f.install_id,
+          screen_name: f.screen_name,
+        });
+        renderDaily(data);
+      }
+
+      async function refreshScreens() {
+        const f = readFilters();
+        const data = await apiGet("/telemetry/admin/screens", {
+          days: f.days,
+          local_user_id: f.local_user_id,
+          install_id: f.install_id,
+          screen_name: f.screen_name,
+          top_n: f.top_n,
+        });
+        renderScreens(data);
+      }
+
+      async function refreshTransitions() {
+        const f = readFilters();
+        const data = await apiGet("/telemetry/admin/transitions", {
+          days: f.days,
+          local_user_id: f.local_user_id,
+          install_id: f.install_id,
+          screen_name: f.screen_name,
+          top_n: f.top_n,
+        });
+        renderTransitions(data);
+      }
+
+      async function refreshTransitionAlerts() {
+        const f = readFilters();
+        const data = await apiGet("/telemetry/admin/transitions/alerts", {
+          days: f.days,
+          baseline_days: f.baseline_days,
+          confirm_windows: f.confirm_windows,
+          sort_by: f.sort_by,
+          min_window_growth: f.min_window_growth,
+          local_user_id: f.local_user_id,
+          install_id: f.install_id,
+          screen_name: f.screen_name,
+          top_n: f.top_n,
+          min_current_count: f.min_current_count,
+          min_growth_ratio: f.min_growth_ratio,
+        });
+        renderTransitionAlerts(data);
+      }
+
+      async function refreshRecent() {
+        const f = readFilters();
+        const data = await apiGet("/telemetry/admin/recent", {
+          limit: f.limit,
+          local_user_id: f.local_user_id,
+          install_id: f.install_id,
+          event_name: f.event_name,
+          screen_name: f.screen_name,
+        });
+        renderRecent(data);
+      }
+
+      async function refreshAll() {
+        if (state.isRefreshing) {
+          return;
+        }
+        state.isRefreshing = true;
+        const started = new Date();
+        setStatus("Refreshing...");
+        try {
+          const results = await Promise.allSettled([
+            refreshOverview(),
+            refreshDaily(),
+            refreshScreens(),
+            refreshTransitions(),
+            refreshTransitionAlerts(),
+            refreshRecent(),
+          ]);
+          const failed = results.find((r) => r.status === "rejected");
+          if (failed) {
+            setStatus(`Refresh failed: ${failed.reason}`, true);
+            return;
+          }
+          setStatus(`Last refresh: ${started.toLocaleTimeString()}`);
+        } finally {
+          state.isRefreshing = false;
+        }
+      }
+
+      function stopAutoRefresh() {
+        if (state.autoRefreshTimer != null) {
+          clearInterval(state.autoRefreshTimer);
+          state.autoRefreshTimer = null;
+        }
+      }
+
+      function configureAutoRefresh() {
+        stopAutoRefresh();
+        const enabled = els.autoRefreshEnabled.checked;
+        const sec = Math.max(10, Number(els.autoRefreshSec.value || 30));
+        els.autoRefreshSec.value = String(sec);
+        if (!enabled) {
+          return;
+        }
+        state.autoRefreshTimer = setInterval(() => {
+          refreshAll().catch((err) => setStatus(`Auto refresh failed: ${err}`, true));
+        }, sec * 1000);
+      }
+
+      function loadDefaults() {
+        els.baseUrl.value = window.location.origin;
+        els.adminKey.value = localStorage.getItem("telemetry_admin_key") || "";
+        els.screenName.value = localStorage.getItem("telemetry_screen_name") || "";
+        els.screenTopN.value = localStorage.getItem("telemetry_screen_top_n") || "100";
+        els.alertsBaselineDays.value = localStorage.getItem("telemetry_alerts_baseline_days") || "14";
+        els.alertsConfirmWindows.value = localStorage.getItem("telemetry_alerts_confirm_windows") || "2";
+        els.alertsMinCurrentCount.value = localStorage.getItem("telemetry_alerts_min_current_count") || "8";
+        els.alertsMinGrowthRatio.value = localStorage.getItem("telemetry_alerts_min_growth_ratio") || "2.0";
+        els.alertsMinWindowGrowth.value = localStorage.getItem("telemetry_alerts_min_window_growth") || "";
+        const alertsSortBy = localStorage.getItem("telemetry_alerts_sort_by") || "severity";
+        els.alertsSortBy.value = alertsSortBy;
+        if (!els.alertsSortBy.value) {
+          els.alertsSortBy.value = "severity";
+        }
+        els.autoRefreshSec.value = localStorage.getItem("telemetry_auto_refresh_sec") || "30";
+        els.autoRefreshEnabled.checked = localStorage.getItem("telemetry_auto_refresh_enabled") === "1";
+        const metric = localStorage.getItem("telemetry_trend_metric") || "usage_ms";
+        els.trendMetric.value = metric in TREND_METRICS ? metric : "usage_ms";
+      }
+
+      function wireEvents() {
+        els.refreshAll.addEventListener("click", () => refreshAll());
+        els.refreshOverview.addEventListener("click", async () => {
+          try {
+            setStatus("Refreshing overview...");
+            await refreshOverview();
+            setStatus(`Overview updated: ${new Date().toLocaleTimeString()}`);
+          } catch (err) {
+            setStatus(`Overview failed: ${err}`, true);
+          }
+        });
+        els.refreshDaily.addEventListener("click", async () => {
+          try {
+            setStatus("Refreshing daily...");
+            await refreshDaily();
+            setStatus(`Daily updated: ${new Date().toLocaleTimeString()}`);
+          } catch (err) {
+            setStatus(`Daily failed: ${err}`, true);
+          }
+        });
+        els.refreshScreens.addEventListener("click", async () => {
+          try {
+            setStatus("Refreshing screens...");
+            await refreshScreens();
+            setStatus(`Screens updated: ${new Date().toLocaleTimeString()}`);
+          } catch (err) {
+            setStatus(`Screens failed: ${err}`, true);
+          }
+        });
+        els.refreshTransitions.addEventListener("click", async () => {
+          try {
+            setStatus("Refreshing transitions...");
+            await refreshTransitions();
+            setStatus(`Transitions updated: ${new Date().toLocaleTimeString()}`);
+          } catch (err) {
+            setStatus(`Transitions failed: ${err}`, true);
+          }
+        });
+        els.refreshTransitionAlerts.addEventListener("click", async () => {
+          try {
+            setStatus("Refreshing transition alerts...");
+            await refreshTransitionAlerts();
+            setStatus(`Transition alerts updated: ${new Date().toLocaleTimeString()}`);
+          } catch (err) {
+            setStatus(`Transition alerts failed: ${err}`, true);
+          }
+        });
+        els.alertPresetStrict.addEventListener("click", () => {
+          applyAlertPreset("strict");
+        });
+        els.alertPresetBalanced.addEventListener("click", () => {
+          applyAlertPreset("balanced");
+        });
+        els.alertPresetAggressive.addEventListener("click", () => {
+          applyAlertPreset("aggressive");
+        });
+        els.saveCustomAlertPreset.addEventListener("click", () => {
+          saveCustomAlertPreset();
+        });
+        els.applyCustomAlertPreset.addEventListener("click", () => {
+          applyCustomAlertPreset();
+        });
+        els.refreshRecent.addEventListener("click", async () => {
+          try {
+            setStatus("Refreshing recent...");
+            await refreshRecent();
+            setStatus(`Recent updated: ${new Date().toLocaleTimeString()}`);
+          } catch (err) {
+            setStatus(`Recent failed: ${err}`, true);
+          }
+        });
+        els.exportDailyCsv.addEventListener("click", () => exportDailyCsv());
+        els.exportScreensCsv.addEventListener("click", () => exportScreensCsv());
+        els.exportTransitionsCsv.addEventListener("click", () => exportTransitionsCsv());
+        els.exportTransitionAlertsCsv.addEventListener("click", () => exportTransitionAlertsCsv());
+        els.exportRecentCsv.addEventListener("click", () => exportRecentCsv());
+        els.clearScreenFilter.addEventListener("click", () => applyScreenFilter("", true));
+        els.clearKey.addEventListener("click", () => {
+          els.adminKey.value = "";
+          localStorage.removeItem("telemetry_admin_key");
+          setStatus("Admin key cleared.");
+        });
+        els.adminKey.addEventListener("change", () => {
+          localStorage.setItem("telemetry_admin_key", els.adminKey.value.trim());
+        });
+        els.screenTopN.addEventListener("change", () => {
+          const n = Math.min(500, Math.max(1, Number(els.screenTopN.value || 100)));
+          els.screenTopN.value = String(n);
+          localStorage.setItem("telemetry_screen_top_n", String(n));
+        });
+        els.alertsBaselineDays.addEventListener("change", () => {
+          const n = Math.min(365, Math.max(1, Number(els.alertsBaselineDays.value || 14)));
+          els.alertsBaselineDays.value = String(n);
+          localStorage.setItem("telemetry_alerts_baseline_days", String(n));
+        });
+        els.alertsConfirmWindows.addEventListener("change", () => {
+          const n = Math.min(4, Math.max(1, Number(els.alertsConfirmWindows.value || 2)));
+          els.alertsConfirmWindows.value = String(n);
+          localStorage.setItem("telemetry_alerts_confirm_windows", String(n));
+        });
+        els.alertsMinCurrentCount.addEventListener("change", () => {
+          const n = Math.max(1, Number(els.alertsMinCurrentCount.value || 8));
+          els.alertsMinCurrentCount.value = String(n);
+          localStorage.setItem("telemetry_alerts_min_current_count", String(n));
+        });
+        els.alertsMinGrowthRatio.addEventListener("change", () => {
+          const ratio = Math.max(0.1, Number(els.alertsMinGrowthRatio.value || 2.0));
+          els.alertsMinGrowthRatio.value = String(ratio);
+          localStorage.setItem("telemetry_alerts_min_growth_ratio", String(ratio));
+        });
+        els.alertsMinWindowGrowth.addEventListener("change", () => {
+          const raw = String(els.alertsMinWindowGrowth.value || "").trim();
+          if (!raw) {
+            els.alertsMinWindowGrowth.value = "";
+            localStorage.removeItem("telemetry_alerts_min_window_growth");
+            return;
+          }
+          const ratio = Math.max(0.1, Number(raw));
+          els.alertsMinWindowGrowth.value = String(ratio);
+          localStorage.setItem("telemetry_alerts_min_window_growth", String(ratio));
+        });
+        els.alertsSortBy.addEventListener("change", () => {
+          localStorage.setItem("telemetry_alerts_sort_by", els.alertsSortBy.value || "severity");
+        });
+        els.screenName.addEventListener("change", () => {
+          localStorage.setItem("telemetry_screen_name", els.screenName.value.trim());
+        });
+        els.autoRefreshSec.addEventListener("change", () => {
+          localStorage.setItem("telemetry_auto_refresh_sec", String(Math.max(10, Number(els.autoRefreshSec.value || 30))));
+          configureAutoRefresh();
+        });
+        els.autoRefreshEnabled.addEventListener("change", () => {
+          localStorage.setItem("telemetry_auto_refresh_enabled", els.autoRefreshEnabled.checked ? "1" : "0");
+          configureAutoRefresh();
+          setStatus(
+            els.autoRefreshEnabled.checked
+              ? `Auto refresh enabled (${Math.max(10, Number(els.autoRefreshSec.value || 30))}s).`
+              : "Auto refresh disabled."
+          );
+        });
+        els.trendMetric.addEventListener("change", () => {
+          localStorage.setItem("telemetry_trend_metric", els.trendMetric.value);
+          const rows = (state.daily && state.daily.rows) || [];
+          renderDailyTrends(rows);
+        });
+      }
+
+      loadDefaults();
+      wireEvents();
+      renderDailyTrends([]);
+      renderTransitionsFlow([]);
+      configureAutoRefresh();
+      refreshAll().catch((err) => setStatus(`Initial load failed: ${err}`, true));
+    </script>
+  </body>
+</html>

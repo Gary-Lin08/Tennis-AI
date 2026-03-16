@@ -1,0 +1,33 @@
+{
+  "num_shots": 2,
+  "shots": [
+    {
+      "shot_id": 1,
+      "frame_num": 19,
+      "time_sec": 0.76,
+      "x_px": 447.79998779296875,
+      "y_px": 267.70001220703125,
+      "x_m": 8.613958358764648,
+      "y_m": 23.886701583862305,
+      "hitter_side": null,
+      "angle_change_deg": 171.78953552246094,
+      "speed_before_kmh": 14.28448486328125,
+      "speed_after_kmh": 8.700042724609375,
+      "confidence": 0.20758004148419584
+    },
+    {
+      "shot_id": 2,
+      "frame_num": 86,
+      "time_sec": 3.44,
+      "x_px": 200.25,
+      "y_px": 205.5,
+      "x_m": 1.943628191947937,
+      "y_m": 18.844623565673828,
+      "hitter_side": "near",
+      "angle_change_deg": 48.34986877441406,
+      "speed_before_kmh": 27.782527923583984,
+      "speed_after_kmh": 9.165140151977539,
+      "confidence": 0.061546294951003805
+    }
+  ]
+}

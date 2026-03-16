@@ -1,0 +1,3 @@
+rally_id,start_frame,end_frame,start_sec,end_sec,server_side_before,winner_side,winner_source,point_status,num_shots,near_shots,far_shots,unassigned_shots,before_sets_near,before_sets_far,before_games_near,before_games_far,before_points_near,before_points_far,after_sets_near,after_sets_far,after_games_near,after_games_far,after_points_near,after_points_far,game_won_by,set_won_by,server_side_after
+1,0,78,0.0,3.12,near,far,opponent_of_last_hitter,scored,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,15,,,near
+2,132,243,5.28,9.72,near,,unknown,pending_winner,1,0,0,1,0,0,0,0,0,15,0,0,0,0,0,15,,,near

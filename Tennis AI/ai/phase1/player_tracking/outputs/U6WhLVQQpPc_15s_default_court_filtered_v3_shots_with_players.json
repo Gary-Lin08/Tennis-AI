@@ -1,0 +1,29 @@
+{
+  "num_shots": 2,
+  "shots": [
+    {
+      "shot_id": 1,
+      "frame_num": 22,
+      "time_sec": 0.88,
+      "x_px": 380.6,
+      "y_px": 254.0,
+      "player_track_id": 1,
+      "player_conf": 0.8616111278533936,
+      "player_side": "near",
+      "assign_distance_px": 0.0,
+      "side_matched": true
+    },
+    {
+      "shot_id": 2,
+      "frame_num": 172,
+      "time_sec": 6.88,
+      "x_px": 361.4,
+      "y_px": 142.6,
+      "player_track_id": null,
+      "player_conf": null,
+      "player_side": null,
+      "assign_distance_px": null,
+      "side_matched": null
+    }
+  ]
+}
