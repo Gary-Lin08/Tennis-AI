@@ -112,4 +112,83 @@ final class OnDeviceVideoAnalyzerTests: XCTestCase {
         XCTAssertNotNil(peakBounce)
         XCTAssertGreaterThanOrEqual(peakBounce!.y, 500)
     }
+
+    func testDetectBouncePointsNoFalsePositiveForLinearDrop() {
+        // Ball only falls — no velocity flip, should produce 0 bounces.
+        let analyzer = OnDeviceVideoAnalyzer(profile: .balanced)
+        let ys = [50, 100, 200, 350, 500, 700, 900]
+        let points = ys.enumerated().map { i, y in
+            InferencePoint(frameIndex: i, x: 400, y: y, confidence: 0.8, isVisible: true)
+        }
+        let result = analyzer.detectBouncePointsForTesting(from: points, sourceHeight: 1080)
+        XCTAssertEqual(result.count, 0, "Monotonically falling ball should have 0 bounces")
+    }
+
+    func testSmoothTrajectoryTwoPointsReturnsTwoUnchanged() {
+        // Two points: count < 3, should pass through as-is.
+        let analyzer = OnDeviceVideoAnalyzer()
+        let points = [
+            InferencePoint(frameIndex: 0, x: 10, y: 20, confidence: 0.7, isVisible: true),
+            InferencePoint(frameIndex: 1, x: 30, y: 40, confidence: 0.7, isVisible: true),
+        ]
+        let result = analyzer.smoothTrajectoryForTesting(points: points, windowRadius: 2)
+        XCTAssertEqual(result.count, 2)
+        XCTAssertEqual(result[0].x, 10)
+        XCTAssertEqual(result[1].x, 30)
+    }
+
+    // MARK: - effectivePoints fallback
+
+    func testEffectivePointsFallbackActivatesWhenNoVisiblePoints() {
+        let analyzer = OnDeviceVideoAnalyzer()
+        // All points invisible (confidence below threshold, isVisible = false)
+        let allPoints = (0..<6).map { i in
+            InferencePoint(frameIndex: i, x: i * 10, y: i * 5, confidence: 0.20, isVisible: false)
+        }
+        let (effective, usingFallback) = analyzer.effectivePointsForTesting(allPoints: allPoints)
+        XCTAssertTrue(usingFallback, "Should use fallback when no visible points")
+        XCTAssertFalse(effective.isEmpty, "Fallback should return non-empty points")
+    }
+
+    func testEffectivePointsNoFallbackWhenVisiblePointsExist() {
+        let analyzer = OnDeviceVideoAnalyzer()
+        let allPoints = [
+            InferencePoint(frameIndex: 0, x: 100, y: 100, confidence: 0.35, isVisible: true),
+            InferencePoint(frameIndex: 1, x: 110, y: 110, confidence: 0.20, isVisible: false),
+        ]
+        let (effective, usingFallback) = analyzer.effectivePointsForTesting(allPoints: allPoints)
+        XCTAssertFalse(usingFallback)
+        XCTAssertEqual(effective.count, 1)
+        XCTAssertTrue(effective[0].isVisible)
+    }
+
+    func testEffectivePointsFallbackSelectsTopConfidencePoints() {
+        let analyzer = OnDeviceVideoAnalyzer()
+        // Best confidence = 0.28; threshold = 0.28 * 0.75 = 0.21. Points at 0.28 and 0.25 pass; 0.10 does not.
+        let allPoints = [
+            InferencePoint(frameIndex: 0, x: 0, y: 0, confidence: 0.28, isVisible: false),
+            InferencePoint(frameIndex: 1, x: 0, y: 0, confidence: 0.25, isVisible: false),
+            InferencePoint(frameIndex: 2, x: 0, y: 0, confidence: 0.10, isVisible: false),
+        ]
+        let (effective, _) = analyzer.effectivePointsForTesting(allPoints: allPoints)
+        XCTAssertEqual(effective.count, 2, "Only points above 75% of best confidence should be included")
+    }
+
+    // MARK: - BounceThresholds ordering
+
+    func testBounceThresholdsMaxWindowFramesDecreaseFromRecallToPrecision() {
+        let recall    = OnDeviceVideoAnalyzer(profile: .highRecall).bounceThresholdsForTesting
+        let precision = OnDeviceVideoAnalyzer(profile: .highPrecision).bounceThresholdsForTesting
+        XCTAssertGreaterThan(recall.maxWindowFrames, precision.maxWindowFrames,
+                             "highRecall should allow wider temporal windows than highPrecision")
+    }
+
+    // MARK: - ActionThresholds ordering
+
+    func testActionThresholdsHighPrecisionHasHigherMotionFloor() {
+        let recall    = OnDeviceVideoAnalyzer(profile: .highRecall).actionThresholdsForTesting
+        let precision = OnDeviceVideoAnalyzer(profile: .highPrecision).actionThresholdsForTesting
+        XCTAssertGreaterThan(precision.motionFloor, recall.motionFloor,
+                             "highPrecision should require more motion to trigger an action")
+    }
 }

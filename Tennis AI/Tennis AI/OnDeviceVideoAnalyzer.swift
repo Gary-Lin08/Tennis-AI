@@ -363,7 +363,9 @@ struct OnDeviceVideoAnalyzer {
         }
 
         var successfulPredictionCount = 0
+        let framesPerWindow = windowedFrames.first?.count ?? 1
         var allPoints: [InferencePoint] = []
+        allPoints.reserveCapacity(windowCount * framesPerWindow)
 
         for (windowIdx, chunk) in windowedFrames.enumerated() {
             if Task.isCancelled {
@@ -400,8 +402,9 @@ struct OnDeviceVideoAnalyzer {
         // If no ball detected at threshold, fall back to best-confidence points so the
         // task completes rather than failing. This can happen with non-tennis footage or
         // very short clips where the model confidence stays below threshold.
+        let usingFallback = visiblePoints.isEmpty && !allPoints.isEmpty
         let effectivePoints: [InferencePoint]
-        if visiblePoints.isEmpty, !allPoints.isEmpty {
+        if usingFallback {
             let bestConf = allPoints.max(by: { $0.confidence < $1.confidence })?.confidence ?? 0
             effectivePoints = allPoints.filter { $0.confidence >= bestConf * 0.75 }
         } else {
@@ -415,7 +418,9 @@ struct OnDeviceVideoAnalyzer {
             sourceHeight: refFrame.height
         )
         let continuity = trajectoryContinuity(points: smoothedPoints, width: refFrame.width, height: refFrame.height)
-        let ballVisibleRate = clamp(Double(effectivePoints.count) / Double(allPoints.count), min: 0.05, max: 0.99)
+        // Use real visiblePoints count so ballVisibleRate reflects actual model confidence,
+        // not the size of the fallback set. Clamped to 0.05 floor to avoid zero quality scores.
+        let ballVisibleRate = clamp(Double(visiblePoints.count) / Double(max(allPoints.count, 1)), min: 0.05, max: 0.99)
         let inferenceSuccessRate = clamp(Double(successfulPredictionCount) / Double(max(windowCount, 1)), min: 0, max: 1)
         let actionStability = actionStabilityScore(for: actions)
         let qualityBreakdown = SessionQualityBreakdown(
@@ -438,7 +443,8 @@ struct OnDeviceVideoAnalyzer {
         let serveCount = actions.filter { $0.type == .serve }.count
         let unknownCount = actions.filter { $0.type == .unknown }.count
 
-        let analysisNote = "TrackNet 输出映射完成（\(profile.shortLabel)）：坐标点 \(smoothedPoints.count)/\(allPoints.count)，检测到弹跳 \(estimatedBounceCount) 次，动作识别 正手 \(forehandCount) / 反手 \(backhandCount) / 发球 \(serveCount) / 未知 \(unknownCount)。"
+        let fallbackLabel = usingFallback ? "置信度回退，" : ""
+        let analysisNote = "TrackNet 输出映射完成（\(profile.shortLabel)）：\(fallbackLabel)坐标点 \(smoothedPoints.count)/\(allPoints.count)，检测到弹跳 \(estimatedBounceCount) 次，动作识别 正手 \(forehandCount) / 反手 \(backhandCount) / 发球 \(serveCount) / 未知 \(unknownCount)。"
 
         return OnDeviceInferenceSummary(
             totalFrames: totalFrames,
@@ -1195,60 +1201,61 @@ struct OnDeviceVideoAnalyzer {
         return array
     }
 
-    private func grayscalePixels(from image: CGImage, width: Int, height: Int) throws -> [Float] {
-        let pixelBuffer = try makePixelBuffer(from: image, width: width, height: height)
-
-        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
-        guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else {
+    /// Renders `image` into a heap-allocated BGRA byte buffer without going through
+    /// CVPixelBuffer — avoids an IOSurface allocation per frame when called in a tight loop.
+    private func renderBGRA(from image: CGImage, width: Int, height: Int) throws -> (bytes: [UInt8], bytesPerRow: Int) {
+        let bytesPerRow = width * 4
+        var rawBytes = [UInt8](repeating: 0, count: height * bytesPerRow)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        guard let context = CGContext(
+            data: &rawBytes,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ) else {
             throw OnDeviceVideoAnalyzerError.pixelBufferCreationFailed
         }
+        context.interpolationQuality = .high
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return (rawBytes, bytesPerRow)
+    }
 
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
-        let ptr = baseAddress.assumingMemoryBound(to: UInt8.self)
+    private func grayscalePixels(from image: CGImage, width: Int, height: Int) throws -> [Float] {
+        let (rawBytes, bytesPerRow) = try renderBGRA(from: image, width: width, height: height)
         var output = [Float](repeating: 0, count: width * height)
-
         for y in 0..<height {
-            let row = ptr.advanced(by: y * bytesPerRow)
+            let rowOffset = y * bytesPerRow
             for x in 0..<width {
-                let pixel = row.advanced(by: x * 4)
-                let b = Float(pixel[0])
-                let g = Float(pixel[1])
-                let r = Float(pixel[2])
+                let off = rowOffset + x * 4
+                let b = Float(rawBytes[off + 0])
+                let g = Float(rawBytes[off + 1])
+                let r = Float(rawBytes[off + 2])
                 output[y * width + x] = (0.114 * b + 0.587 * g + 0.299 * r) / 255.0
             }
         }
-
         return output
     }
 
     private func rgbPixels(from image: CGImage, width: Int, height: Int) throws -> [Float] {
-        let pixelBuffer = try makePixelBuffer(from: image, width: width, height: height)
-
-        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
-        guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else {
-            throw OnDeviceVideoAnalyzerError.pixelBufferCreationFailed
-        }
-
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
-        let ptr = baseAddress.assumingMemoryBound(to: UInt8.self)
+        let (rawBytes, bytesPerRow) = try renderBGRA(from: image, width: width, height: height)
         var output = [Float](repeating: 0, count: width * height * 3)
-
         for y in 0..<height {
-            let row = ptr.advanced(by: y * bytesPerRow)
+            let rowOffset = y * bytesPerRow
             for x in 0..<width {
-                let pixel = row.advanced(by: x * 4)
-                let b = Float(pixel[0]) / 255.0
-                let g = Float(pixel[1]) / 255.0
-                let r = Float(pixel[2]) / 255.0
+                let off = rowOffset + x * 4
+                let b = Float(rawBytes[off + 0]) / 255.0
+                let g = Float(rawBytes[off + 1]) / 255.0
+                let r = Float(rawBytes[off + 2]) / 255.0
                 let idx = (y * width + x) * 3
                 output[idx + 0] = r
                 output[idx + 1] = g
                 output[idx + 2] = b
             }
         }
-
         return output
     }
 
@@ -1483,6 +1490,24 @@ extension OnDeviceVideoAnalyzer {
 
     func detectBouncePointsForTesting(from points: [InferencePoint], sourceHeight: Int) -> [InferencePoint] {
         detectBouncePoints(from: points, sourceHeight: sourceHeight)
+    }
+
+    func detectPlayerActionsForTesting(
+        from points: [InferencePoint],
+        sourceWidth: Int,
+        sourceHeight: Int
+    ) -> [DetectedAction] {
+        detectPlayerActions(from: points, sourceWidth: sourceWidth, sourceHeight: sourceHeight)
+    }
+
+    /// Returns the effective points after applying the fallback rule, mirroring analyzeTrackNet logic.
+    func effectivePointsForTesting(allPoints: [InferencePoint]) -> (points: [InferencePoint], usingFallback: Bool) {
+        let visible = allPoints.filter(\.isVisible)
+        if visible.isEmpty, !allPoints.isEmpty {
+            let bestConf = allPoints.max(by: { $0.confidence < $1.confidence })?.confidence ?? 0
+            return (allPoints.filter { $0.confidence >= bestConf * 0.75 }, true)
+        }
+        return (visible, false)
     }
 }
 #endif
