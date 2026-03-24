@@ -5,6 +5,31 @@ on:
     branches: ["main"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Backend base URL (e.g. https://api.example.com)"
+        required: true
+        type: string
+      actor_key:
+        description: "Actor key used by smoke script"
+        required: true
+        default: "ci:smoke:player_001"
+        type: string
+      video_url:
+        description: "Optional public video URL for /analysis/videos smoke"
+        required: false
+        default: ""
+        type: string
+      strict_stage_order:
+        description: "Enable strict stage-order validation"
+        required: true
+        default: true
+        type: boolean
+      poll_timeout_sec:
+        description: "Polling timeout in seconds"
+        required: true
+        default: "900"
+        type: string
 
 jobs:
   smoke-script-check:
@@ -43,3 +68,57 @@ jobs:
 
           print("All required baseline files exist.")
           PY
+
+  backend-smoke-manual:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare optional video input
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${{ inputs.video_url }}" ]]; then
+            curl -fL --retry 3 --retry-delay 2 "${{ inputs.video_url }}" -o /tmp/smoke_video.mp4
+            echo "SMOKE_VIDEO_PATH=/tmp/smoke_video.mp4" >> "$GITHUB_ENV"
+          else
+            echo "SMOKE_VIDEO_PATH=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run backend smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          CMD=(python ai/backend/smoke_api_check.py
+            --base-url "${{ inputs.base_url }}"
+            --actor-key "${{ inputs.actor_key }}"
+            --poll-timeout-sec "${{ inputs.poll_timeout_sec }}"
+            --summary-out "smoke_summary.json")
+
+          if [[ "${{ inputs.strict_stage_order }}" == "true" ]]; then
+            CMD+=(--strict-stage-order)
+          fi
+
+          if [[ -n "${SMOKE_VIDEO_PATH}" ]]; then
+            CMD+=(--video-path "${SMOKE_VIDEO_PATH}")
+          else
+            CMD+=(--skip-analysis-upload)
+          fi
+
+          "${CMD[@]}"
+
+      - name: Upload smoke summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-summary
+          path: smoke_summary.json
+          if-no-files-found: warn

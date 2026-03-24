@@ -36,6 +36,15 @@ python3 ai/backend/smoke_api_check.py --help
 
 - 参考：`docs/integration-playbook.md`
 
+## GitHub Actions 手动 smoke
+
+仓库内置 `ci` 工作流，支持手动触发真实后端 smoke：
+
+- 必填输入：`base_url`、`actor_key`
+- 可选输入：`video_url`（可公网下载的视频 URL）
+- 若不提供 `video_url`，工作流会自动使用 `--skip-analysis-upload`，仅检查 health + telemetry
+- 产物：`smoke-summary`（`smoke_summary.json`）
+
 ## 文档入口
 
 - 文档导航：`docs/architecture.md`

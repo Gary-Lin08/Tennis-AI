@@ -103,3 +103,15 @@ python ai/backend/smoke_api_check.py \
 - 卡在 Phase1：检查 Python 依赖、模型和脚本路径、超时参数
 - 列表有会话但详情失败：重点看 `session_ref` 与 `actor_key` 是否一致
 - telemetry 失败：检查 endpoint、请求体和后端日志
+
+## 7. GitHub Actions 手动联调
+
+仓库 `ci` 工作流支持手动触发（`Run workflow`）：
+
+- `base_url`：后端地址（必填）
+- `actor_key`：联调身份（必填）
+- `video_url`：可选公网视频链接
+- `strict_stage_order`：是否启用严格阶段顺序校验
+- `poll_timeout_sec`：轮询超时秒数
+
+执行完成后可下载构建产物 `smoke-summary`，其中包含 `smoke_summary.json`。
