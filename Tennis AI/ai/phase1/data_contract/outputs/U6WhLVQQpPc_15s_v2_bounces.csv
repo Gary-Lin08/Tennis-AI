@@ -1,0 +1,2 @@
+session_external_id,bounce_id,rally_id,frame_num,time_sec,x_px,y_px,x_m,y_m,in_court,confidence,detection_method
+U6WhLVQQpPc_15s,1,2,237,9.48,365.0,273.0,6.590023,24.10515,0,0.613889,vy_sign_flip

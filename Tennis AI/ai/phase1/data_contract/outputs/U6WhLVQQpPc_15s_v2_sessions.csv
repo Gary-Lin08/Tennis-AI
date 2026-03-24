@@ -1,0 +1,2 @@
+session_external_id,source_video_path,generated_at_utc,fps,total_frames,width_px,height_px,duration_sec,court_width_m,court_length_m,first_server_side,current_server_side,final_sets_near,final_sets_far,final_games_near,final_games_far,final_points_near,final_points_far,num_rallies,num_shots,num_bounces,num_points_scored,num_points_pending
+U6WhLVQQpPc_15s,/Users/kl/Desktop/Tennisvisionclone/Tennis AI/ai/phase1/tracknet_tennis/videos/U6WhLVQQpPc_15s.mp4,2026-03-11T18:47:58.955640+00:00,25.0,375,640,360,15.0,10.97,23.77,near,near,0,0,0,0,0,30,2,2,1,2,0

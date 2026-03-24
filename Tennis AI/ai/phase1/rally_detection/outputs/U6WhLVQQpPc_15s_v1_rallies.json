@@ -1,0 +1,50 @@
+{
+  "num_rallies": 3,
+  "rallies": [
+    {
+      "rally_id": 1,
+      "start_frame": 0,
+      "end_frame": 78,
+      "start_sec": 0.0,
+      "end_sec": 3.12,
+      "duration_sec": 3.16,
+      "num_frames": 79,
+      "num_shots": 1,
+      "first_shot_id": 1,
+      "last_shot_id": 1,
+      "near_shots": 1,
+      "far_shots": 0,
+      "unassigned_shots": 0
+    },
+    {
+      "rally_id": 2,
+      "start_frame": 132,
+      "end_frame": 243,
+      "start_sec": 5.28,
+      "end_sec": 9.72,
+      "duration_sec": 4.48,
+      "num_frames": 112,
+      "num_shots": 1,
+      "first_shot_id": 2,
+      "last_shot_id": 2,
+      "near_shots": 0,
+      "far_shots": 0,
+      "unassigned_shots": 1
+    },
+    {
+      "rally_id": 3,
+      "start_frame": 256,
+      "end_frame": 375,
+      "start_sec": 10.24,
+      "end_sec": 15.0,
+      "duration_sec": 4.8,
+      "num_frames": 120,
+      "num_shots": 0,
+      "first_shot_id": null,
+      "last_shot_id": null,
+      "near_shots": 0,
+      "far_shots": 0,
+      "unassigned_shots": 0
+    }
+  ]
+}

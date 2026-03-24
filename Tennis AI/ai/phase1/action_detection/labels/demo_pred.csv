@@ -1,0 +1,6 @@
+frame_num,action_type,confidence
+119,发球,0.91
+190,fh,0.83
+246,backhand,0.79
+318,forehand,0.38
+420,serve,0.41

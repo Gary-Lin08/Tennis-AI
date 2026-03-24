@@ -1,0 +1,31 @@
+# Python virtual environments
+ai/ml_env/
+ai/.venv*/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.env
+
+# GridTrackNet cloned repo (large, not part of this project)
+GridTrackNet/
+
+# Xcode derived data / build outputs
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Vim / editor swap files
+*.swp
+*.swo
+*~
+
+# Python eggs / dist
+*.egg-info/
+dist/
+build/

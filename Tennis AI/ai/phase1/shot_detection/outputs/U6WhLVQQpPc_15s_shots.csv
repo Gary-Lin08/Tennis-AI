@@ -1,0 +1,2 @@
+shot_id,frame_num,time_sec,x_px,y_px,x_m,y_m,hitter_side,angle_change_deg,speed_before_kmh,speed_after_kmh,confidence
+1,189,7.56,273.0,63.0,3.177,-4.353,far,166.76,38.66,33.15,0.768

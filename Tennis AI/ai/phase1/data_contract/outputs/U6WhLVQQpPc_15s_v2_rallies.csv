@@ -1,0 +1,3 @@
+session_external_id,rally_id,start_frame,end_frame,start_sec,end_sec,duration_sec,num_frames,num_shots,near_shots,far_shots,unassigned_shots,winner_side,winner_source,point_status,server_side_before,server_side_after,before_score,after_score,game_won_by,set_won_by,tie_break_before,tie_break_after,tb_points_before_near,tb_points_before_far,tb_points_after_near,tb_points_after_far
+U6WhLVQQpPc_15s,1,0,78,0.0,3.12,3.16,79,1,1,0,0,far,opponent_of_last_hitter,scored,near,near,S0-0 G0-0 P0-0,S0-0 G0-0 P0-15,,,,,,,,
+U6WhLVQQpPc_15s,2,132,243,5.28,9.72,4.48,112,1,0,0,1,far,override,scored,near,near,S0-0 G0-0 P0-15,S0-0 G0-0 P0-30,,,,,,,,

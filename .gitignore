@@ -1,24 +1,52 @@
+# Python virtual environments
+Tennis AI/ai/ml_env/
+Tennis AI/ai/.venv*/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+Tennis AI/ai/backend/.env
+
+# GridTrackNet cloned repo (large external dependency)
+Tennis AI/GridTrackNet/
+
+# Xcode derived data / build outputs
+**/DerivedData/
+*.xcuserstate
+**/xcuserdata/
+*.xccheckout
+*.moved-aside
+
 # macOS
 .DS_Store
+**/.DS_Store
+
+# Vim / editor swap files
+*.swp
+*.swo
+*~
+
+# Python eggs / dist
+*.egg-info/
+dist/
+build/
+
+# Claude Code internal
+.claude/
 
 # Python
-__pycache__/
 *.py[cod]
-*.pyo
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
 coverage.xml
 
-# Virtual environments
+# Generic virtual environments
 .venv/
 venv/
 env/
 
 # Build / artifacts
-dist/
-build/
 output/
 *.profraw
 
