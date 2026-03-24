@@ -112,6 +112,11 @@ enum OnDeviceInferenceProfile: String, CaseIterable, Identifiable {
 }
 
 struct OnDeviceVideoAnalyzer {
+    private struct ActionRecognitionResolution {
+        let actions: [DetectedAction]
+        let note: String
+    }
+
     private enum TensorOrder {
         case chw
         case hwc
@@ -412,11 +417,14 @@ struct OnDeviceVideoAnalyzer {
         }
         let smoothedPoints = smoothTrajectory(points: effectivePoints, windowRadius: 2)
         let bouncePoints = detectBouncePoints(from: smoothedPoints, sourceHeight: refFrame.height)
-        let actions = detectPlayerActions(
+        let actionResolution = await resolveActions(
+            asset: asset,
+            videoTrack: videoTrack,
             from: smoothedPoints,
             sourceWidth: refFrame.width,
             sourceHeight: refFrame.height
         )
+        let actions = actionResolution.actions
         let continuity = trajectoryContinuity(points: smoothedPoints, width: refFrame.width, height: refFrame.height)
         // Use real visiblePoints count so ballVisibleRate reflects actual model confidence,
         // not the size of the fallback set. Clamped to 0.05 floor to avoid zero quality scores.
@@ -444,7 +452,7 @@ struct OnDeviceVideoAnalyzer {
         let unknownCount = actions.filter { $0.type == .unknown }.count
 
         let fallbackLabel = usingFallback ? "置信度回退，" : ""
-        let analysisNote = "TrackNet 输出映射完成（\(profile.shortLabel)）：\(fallbackLabel)坐标点 \(smoothedPoints.count)/\(allPoints.count)，检测到弹跳 \(estimatedBounceCount) 次，动作识别 正手 \(forehandCount) / 反手 \(backhandCount) / 发球 \(serveCount) / 未知 \(unknownCount)。"
+        let analysisNote = "TrackNet 输出映射完成（\(profile.shortLabel)）：\(fallbackLabel)坐标点 \(smoothedPoints.count)/\(allPoints.count)，检测到弹跳 \(estimatedBounceCount) 次，动作统计 正手 \(forehandCount) / 反手 \(backhandCount) / 发球 \(serveCount) / 未知 \(unknownCount)。\(actionResolution.note)"
 
         return OnDeviceInferenceSummary(
             totalFrames: totalFrames,
@@ -722,6 +730,48 @@ struct OnDeviceVideoAnalyzer {
         }
 
         return bounces
+    }
+
+    private func resolveActions(
+        asset: AVAsset,
+        videoTrack: AVAssetTrack,
+        from points: [InferencePoint],
+        sourceWidth: Int,
+        sourceHeight: Int
+    ) async -> ActionRecognitionResolution {
+        let heuristicActions = detectPlayerActions(
+            from: points,
+            sourceWidth: sourceWidth,
+            sourceHeight: sourceHeight
+        )
+
+        guard !points.isEmpty else {
+            return ActionRecognitionResolution(
+                actions: heuristicActions,
+                note: heuristicActionNote(for: heuristicActions)
+            )
+        }
+
+        let poseResult = await PoseShotRecognizer().recognize(asset: asset, videoTrack: videoTrack)
+        if !poseResult.actions.isEmpty {
+            return ActionRecognitionResolution(actions: poseResult.actions, note: poseResult.note)
+        }
+
+        let fallbackNote = heuristicActionNote(for: heuristicActions)
+        let combinedNote = poseResult.note.isEmpty ? fallbackNote : "\(poseResult.note) \(fallbackNote)"
+        return ActionRecognitionResolution(actions: heuristicActions, note: combinedNote)
+    }
+
+    private func heuristicActionNote(for actions: [DetectedAction]) -> String {
+        guard !actions.isEmpty else {
+            return "轨迹启发式动作识别也未触发。"
+        }
+
+        let forehandCount = actions.filter { $0.type == .forehand }.count
+        let backhandCount = actions.filter { $0.type == .backhand }.count
+        let serveCount = actions.filter { $0.type == .serve }.count
+        let unknownCount = actions.filter { $0.type == .unknown }.count
+        return "已回退到轨迹启发式动作识别：正手 \(forehandCount) / 反手 \(backhandCount) / 发球 \(serveCount) / 未知 \(unknownCount)。"
     }
 
     private func detectPlayerActions(
