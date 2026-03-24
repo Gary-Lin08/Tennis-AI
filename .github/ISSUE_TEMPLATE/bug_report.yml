@@ -1,0 +1,43 @@
+name: Bug report
+description: 提交一个缺陷报告
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 清晰描述你遇到的问题
+      placeholder: 发生了什么？预期是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce-steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与截图
+      description: 粘贴关键日志、报错堆栈或截图
+      render: shell
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 影响范围
+      options:
+        - docs
+        - backend smoke script
+        - CI
+        - 其他
+    validations:
+      required: true

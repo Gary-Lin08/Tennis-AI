@@ -4,6 +4,7 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   smoke-script-check:
@@ -22,3 +23,23 @@ jobs:
 
       - name: Smoke script help
         run: python ai/backend/smoke_api_check.py --help
+
+      - name: Validate required docs exist
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          required = [
+              "README.md",
+              "docs/architecture.md",
+              "docs/architecture-overview.md",
+              "docs/integration-playbook.md",
+              "ai/backend/smoke_api_check.py",
+          ]
+
+          missing = [p for p in required if not Path(p).exists()]
+          if missing:
+              raise SystemExit(f"Missing required files: {missing}")
+
+          print("All required baseline files exist.")
+          PY

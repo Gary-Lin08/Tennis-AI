@@ -1,0 +1,44 @@
+name: Feature request
+description: 提交一个新功能建议
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景与目标
+      description: 你希望解决什么问题？
+      placeholder: 当前痛点、目标用户、目标结果
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 方案建议
+      placeholder: 你建议怎么做？
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      placeholder: |
+        - [ ] 条件 1
+        - [ ] 条件 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: related-area
+    attributes:
+      label: 相关模块
+      options:
+        - architecture docs
+        - integration playbook
+        - backend smoke script
+        - CI/CD
+        - 其他
+    validations:
+      required: true
