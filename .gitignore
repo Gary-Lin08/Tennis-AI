@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / artifacts
+dist/
+build/
+output/
+*.profraw
+
+# Media and model artifacts
+*.mp4
+*.MP4
+*.mov
+*.avi
+*.mkv
+*.pt
+*.onnx
+*.mlmodelc
+
+# IDE
+.idea/
+.vscode/
