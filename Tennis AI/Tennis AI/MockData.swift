@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class TennisAIViewModel: ObservableObject {
+final class LegacyTennisAIViewModel: ObservableObject {
     @Published var sessions: [AnalysisSession]
     @Published var drills: [DrillRecommendation]
     @Published var jobs: [LocalAnalysisJob]
@@ -675,6 +675,8 @@ final class TennisAIViewModel: ObservableObject {
             switch error {
             case .noModelFound(let expectedNames):
                 modelStatus = .missing(expectedNames: expectedNames)
+            case .unexpectedModelsFound:
+                modelStatus = .failed(message: error.localizedDescription)
             case .loadFailed(let modelName, let reason):
                 modelStatus = .failed(message: "\(modelName) 无法加载：\(reason)")
             }

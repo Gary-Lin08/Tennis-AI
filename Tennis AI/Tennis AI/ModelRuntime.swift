@@ -173,6 +173,7 @@ enum OnDeviceModelStatus: Equatable {
 
 enum OnDeviceModelLoaderError: LocalizedError {
     case noModelFound(expectedNames: [String])
+    case unexpectedModelsFound(expectedNames: [String], foundNames: [String])
     case loadFailed(modelName: String, reason: String)
 
     var errorDescription: String? {
@@ -180,6 +181,10 @@ enum OnDeviceModelLoaderError: LocalizedError {
         case .noModelFound(let expectedNames):
             let names = expectedNames.joined(separator: ", ")
             return "Bundle 中未找到可用模型（候选: \(names)）。"
+        case .unexpectedModelsFound(let expectedNames, let foundNames):
+            let expected = expectedNames.joined(separator: ", ")
+            let found = foundNames.joined(separator: ", ")
+            return "Bundle 中存在 Core ML 模型，但名称不匹配。期望: \(expected)；实际发现: \(found)。"
         case .loadFailed(let modelName, let reason):
             return "\(modelName).mlmodelc 加载失败：\(reason)"
         }
@@ -205,9 +210,16 @@ struct OnDeviceModelLoader {
             }
         }
 
-        if let fallbackURL = bundle.urls(forResourcesWithExtension: "mlmodelc", subdirectory: nil)?.first {
-            let fallbackName = fallbackURL.deletingPathExtension().lastPathComponent
-            return try loadModel(at: fallbackURL, modelName: fallbackName)
+        let availableModelNames = bundle
+            .urls(forResourcesWithExtension: "mlmodelc", subdirectory: nil)?
+            .map { $0.deletingPathExtension().lastPathComponent }
+            .sorted()
+            ?? []
+        if !availableModelNames.isEmpty {
+            throw OnDeviceModelLoaderError.unexpectedModelsFound(
+                expectedNames: expectedModelNames,
+                foundNames: availableModelNames
+            )
         }
 
         throw OnDeviceModelLoaderError.noModelFound(expectedNames: expectedModelNames)
