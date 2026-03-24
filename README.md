@@ -40,7 +40,11 @@ python3 ai/backend/smoke_api_check.py --help
 
 仓库内置 `ci` 工作流，支持手动触发真实后端 smoke：
 
-- 必填输入：`base_url`、`actor_key`
+- 推荐在仓库 Secrets 预置：
+  - `SMOKE_BASE_URL`
+  - `SMOKE_ACTOR_KEY`
+  - `SMOKE_VIDEO_URL`（可选）
+- 手动输入会覆盖 secrets；若输入留空，则自动回退到 secrets
 - 可选输入：`video_url`（可公网下载的视频 URL）
 - 若不提供 `video_url`，工作流会自动使用 `--skip-analysis-upload`，仅检查 health + telemetry
 - 产物：`smoke-summary`（`smoke_summary.json`）

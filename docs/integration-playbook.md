@@ -108,10 +108,16 @@ python ai/backend/smoke_api_check.py \
 
 仓库 `ci` 工作流支持手动触发（`Run workflow`）：
 
-- `base_url`：后端地址（必填）
-- `actor_key`：联调身份（必填）
+- `base_url`：后端地址（可选，留空时回退 `SMOKE_BASE_URL`）
+- `actor_key`：联调身份（可选，留空时回退 `SMOKE_ACTOR_KEY`）
 - `video_url`：可选公网视频链接
 - `strict_stage_order`：是否启用严格阶段顺序校验
 - `poll_timeout_sec`：轮询超时秒数
 
 执行完成后可下载构建产物 `smoke-summary`，其中包含 `smoke_summary.json`。
+
+建议在仓库 Secrets 中配置：
+
+- `SMOKE_BASE_URL`
+- `SMOKE_ACTOR_KEY`
+- `SMOKE_VIDEO_URL`（可选）

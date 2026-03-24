@@ -8,12 +8,13 @@ on:
     inputs:
       base_url:
         description: "Backend base URL (e.g. https://api.example.com)"
-        required: true
+        required: false
+        default: ""
         type: string
       actor_key:
         description: "Actor key used by smoke script"
-        required: true
-        default: "ci:smoke:player_001"
+        required: false
+        default: ""
         type: string
       video_url:
         description: "Optional public video URL for /analysis/videos smoke"
@@ -82,12 +83,44 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Resolve runtime inputs (with secrets fallback)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_URL="${{ inputs.base_url }}"
+          ACTOR_KEY="${{ inputs.actor_key }}"
+          VIDEO_URL_INPUT="${{ inputs.video_url }}"
+
+          if [[ -z "${BASE_URL}" ]]; then
+            BASE_URL="${{ secrets.SMOKE_BASE_URL }}"
+          fi
+          if [[ -z "${ACTOR_KEY}" ]]; then
+            ACTOR_KEY="${{ secrets.SMOKE_ACTOR_KEY }}"
+          fi
+          if [[ -z "${VIDEO_URL_INPUT}" ]]; then
+            VIDEO_URL_INPUT="${{ secrets.SMOKE_VIDEO_URL }}"
+          fi
+
+          if [[ -z "${BASE_URL}" ]]; then
+            echo "base_url is empty, and secret SMOKE_BASE_URL is not set."
+            exit 1
+          fi
+          if [[ -z "${ACTOR_KEY}" ]]; then
+            echo "actor_key is empty, and secret SMOKE_ACTOR_KEY is not set."
+            exit 1
+          fi
+
+          echo "RESOLVED_BASE_URL=${BASE_URL}" >> "$GITHUB_ENV"
+          echo "RESOLVED_ACTOR_KEY=${ACTOR_KEY}" >> "$GITHUB_ENV"
+          echo "RESOLVED_VIDEO_URL=${VIDEO_URL_INPUT}" >> "$GITHUB_ENV"
+
       - name: Prepare optional video input
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "${{ inputs.video_url }}" ]]; then
-            curl -fL --retry 3 --retry-delay 2 "${{ inputs.video_url }}" -o /tmp/smoke_video.mp4
+          if [[ -n "${RESOLVED_VIDEO_URL}" ]]; then
+            curl -fL --retry 3 --retry-delay 2 "${RESOLVED_VIDEO_URL}" -o /tmp/smoke_video.mp4
             echo "SMOKE_VIDEO_PATH=/tmp/smoke_video.mp4" >> "$GITHUB_ENV"
           else
             echo "SMOKE_VIDEO_PATH=" >> "$GITHUB_ENV"
@@ -98,8 +131,8 @@ jobs:
         run: |
           set -euo pipefail
           CMD=(python ai/backend/smoke_api_check.py
-            --base-url "${{ inputs.base_url }}"
-            --actor-key "${{ inputs.actor_key }}"
+            --base-url "${RESOLVED_BASE_URL}"
+            --actor-key "${RESOLVED_ACTOR_KEY}"
             --poll-timeout-sec "${{ inputs.poll_timeout_sec }}"
             --summary-out "smoke_summary.json")
 
