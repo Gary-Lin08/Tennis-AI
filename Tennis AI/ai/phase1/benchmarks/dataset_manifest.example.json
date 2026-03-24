@@ -1,0 +1,17 @@
+{
+  "dataset_version": "fixed_camera_v1",
+  "entries": [
+    {
+      "id": "u6wh_fixed_15s",
+      "video": "ai/phase1/tracknet_tennis/videos/U6WhLVQQpPc_15s.mp4",
+      "court_json": "ai/phase1/court_detection/outputs/U6WhLVQQpPc_15s_v2_court_detection.json",
+      "ground_truth_csv": "",
+      "bounce_gt_json": "",
+      "tags": [
+        "fixed-camera",
+        "behind-baseline",
+        "usable"
+      ]
+    }
+  ]
+}

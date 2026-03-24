@@ -90,11 +90,11 @@ final class PlaybackExportIntegrationTests: XCTestCase {
     private func integrationConfig() throws -> IntegrationConfig {
         let env = ProcessInfo.processInfo.environment
         let documentsURL = try documentsDirectory()
+        let repoRoot = repositoryRoot()
 
         let fixtureVideoPath = env["TENNIS_AI_FIXTURE_VIDEO"].flatMap { $0.isEmpty ? nil : $0 }
-            ?? documentsURL
-                .appendingPathComponent("IntegrationFixtures", isDirectory: true)
-                .appendingPathComponent("tennis-auto-calibration-fixture-60s.mp4")
+            ?? repoRoot
+                .appendingPathComponent("Tennis AI/GridTrackNet/Sample Video's/Professional Hardcourt.mp4")
                 .path
         let outputVideoPath = env["TENNIS_AI_EXPORT_OUTPUT"].flatMap { $0.isEmpty ? nil : $0 }
             ?? documentsURL
@@ -135,6 +135,13 @@ final class PlaybackExportIntegrationTests: XCTestCase {
             return url
         }
         throw XCTSkip("Unable to resolve simulator documents directory.")
+    }
+
+    private func repositoryRoot() -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // Tests
+            .deletingLastPathComponent() // Tennis AI
+            .deletingLastPathComponent() // Tennis AI (repo subdir)
     }
 
     private func resolveAspectRatio(for videoURL: URL) async throws -> Double {
