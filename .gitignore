@@ -63,3 +63,10 @@ output/
 # IDE
 .idea/
 .vscode/
+
+# Third-party models and media (not redistributed)
+.DS_Store
+*.mp4
+Tennis AI/Tennis AI/TrackNet.mlpackage/
+Tennis AI/Tennis AI/ShotRecognitionRNN.mlpackage/
+Tennis AI/ai/phase1/player_tracking/models/
